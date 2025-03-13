@@ -10,14 +10,19 @@
     <!-- 币种选择器 -->
     <view class="mb-[20rpx] mt-[24rpx] p-l-[28rpx] p-r-[18rpx]">
       <view
-        class="h-[108rpx] flex items-center justify-between border rounded-[10rpx] p-x-[20rpx]"
-        :style="{ backgroundImage: `url(${currency_bg})` }"
+        class="relative h-[108rpx] flex items-center justify-between overflow-hidden rounded-[10rpx] p-x-[20rpx] shadow-md"
       >
-        <text class="text-[32rpx] text-[#333]">
-          FDUSD/USDT
-        </text>
-        <view class="flex items-center" @click="handleCurrency">
-          <image :src="icon_right" class="h-[48rpx] w-[48rpx]" />
+        <!-- 背景渐变层 -->
+        <view class="absolute inset-0 z-0" style="background: linear-gradient(to right, #FFF5EC, #FFF3E9)" />
+
+        <!-- 内容层 -->
+        <view class="relative z-1 w-full flex items-center justify-between">
+          <text class="text-[32rpx] text-[#333]">
+            FDUSD/USDT
+          </text>
+          <view class="flex items-center" @click="handleCurrency">
+            <image :src="icon_right" class="h-[48rpx] w-[48rpx]" />
+          </view>
         </view>
       </view>
     </view>
