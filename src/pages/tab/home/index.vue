@@ -94,7 +94,7 @@
         <view class="relative mt-[24rpx]">
           <slider
             :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
-            active-color="#E53935" background-color="#FFE4E1" class="slider-custom" @change="handleSliderChange"
+            :active-color="activeTab === 'buy' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom" @change="handleSliderChange"
             @changing="handleSliderChanging"
           />
         </view>
@@ -129,7 +129,7 @@
         <!-- 买入按钮 -->
         <view class="mt-[40rpx]">
           <u-button
-            text="买入 IP" color="#E53935"
+            text="买入 IP" :color="activeTab === 'buy' ? '#E53935' : '#4CAF50'"
             :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
           />
         </view>
@@ -226,6 +226,50 @@
             </text>
           </view>
         </view>
+        <view class="text-[28rpx] text-[#999] font-500">
+          2025-02-28 16:26:22
+        </view>
+      </view>
+    </view>
+    <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+      <view class="flex flex-col items-center justify-center">
+        <view class="text-[44rpx] text-[#333] font-bold">
+          0.46988
+        </view>
+        <view class="text-[24rpx] text-[#666]">
+          委托价格(USDT)
+        </view>
+      </view>
+
+      <view class="flex flex-col items-center justify-center">
+        <view class="text-[44rpx] text-[#333] font-bold">
+          3
+        </view>
+        <view class="text-[24rpx] text-[#666]">
+          委托数量(IP)
+        </view>
+      </view>
+      <view class="flex flex-col items-center justify-center">
+        <view class="text-[44rpx] text-[#333] font-bold">
+          1.40964
+        </view>
+        <view class="text-[24rpx] text-[#666]">
+          交易额(USDT)
+        </view>
+      </view>
+    </view>
+
+    <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+      <view class="flex flex-col items-center justify-center">
+        <view class="text-[44rpx] text-[#E6302F] font-bold">
+          2
+        </view>
+        <view class="text-[24rpx] text-[#999]">
+          已成交(IP)
+        </view>
+      </view>
+      <view class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold">
+        撤销
       </view>
     </view>
   </c-container>
