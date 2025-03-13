@@ -8,7 +8,11 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AgreePrivacy: typeof import('./../src/components/agree-privacy/index.vue')['default']
+    CContainer: typeof import('./../src/components/c-container/index.vue')['default']
+    CHeader: typeof import('./../src/components/c-header/index.vue')['default']
+    CustomHeader: typeof import('./../src/components/custom-header/index.vue')['default']
     LangSelect: typeof import('./../src/components/lang-select/index.vue')['default']
+    NavBar: typeof import('./../src/components/NavBar.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

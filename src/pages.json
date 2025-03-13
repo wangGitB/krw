@@ -11,7 +11,7 @@
     {
       "path": "pages/tab/home/index",
       "style": {
-        "navigationBarTitleText": "行情"
+        "navigationStyle": "custom"
       }
     },
     {
