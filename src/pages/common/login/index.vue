@@ -1,122 +1,129 @@
 <template>
-  <view>
+  <view class="login-container">
+    <view class="header">
+      <view class="hello">
+        HELLO
+      </view>
+      <view class="welcome">
+        欢迎登录~
+      </view>
+    </view>
+
     <view class="login-form-wrap">
       <view class="title">
-        欢迎登录
+        登录
       </view>
-      <input v-model="tel" class="u-border-bottom" type="number" placeholder="请输入手机号">
-      <view class="u-border-bottom my-40rpx flex">
-        <input v-model="code" class="flex-1" type="number" placeholder="请输入验证码">
-        <view>
-          <u-code ref="uCodeRef" @change="codeChange" />
-          <u-button :text="tips" type="success" size="mini" @click="getCode" />
-        </view>
-      </view>
-      <button class="login-btn" :style="[inputStyle]" @tap="submit">
-        登录 <text class="i-mdi-login" />
-      </button>
 
-      <view class="alternative">
-        <view class="password">
-          密码登录
-        </view>
-        <view class="issue flex items-center">
-          遇到问题 <text class="i-mdi-help" />
-        </view>
+      <view class="input-item">
+        <input v-model="login_name" type="number" placeholder="手机号/邮箱" placeholder-class="placeholder">
       </view>
-    </view>
-    <view class="login-type-wrap">
-      <view class="item wechat">
-        <view class="icon">
-          <u-icon size="35" name="weixin-fill" color="rgb(83,194,64)" />
-        </view>
-        微信
+
+      <view class="input-item">
+        <input v-model="password" password placeholder="密码" placeholder-class="placeholder">
       </view>
-      <view class="item QQ">
-        <view class="icon">
-          <u-icon size="35" name="qq-fill" color="rgb(17,183,233)" />
-        </view>
-        QQ
+
+      <!-- 只有密码错误次数大于0时才显示验证码 -->
+      <view v-if="passwordErrorCount > 0" class="input-item captcha-container">
+        <input v-model="captcha" type="text" placeholder="请输入验证码" placeholder-class="placeholder">
+        <image class="captcha-img" :src="captchaUrl" @tap="refreshCaptcha" />
       </view>
-    </view>
-    <view class="hint">
-      登录代表同意
-      <text class="link">
-        用户协议、隐私政策，
-      </text>
-      并授权使用您的账号信息（如昵称、头像、收获地址）以便您统一管理
+
+      <button class="login-btn" @tap="submit">
+        登录
+      </button>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import type { CSSProperties } from 'vue';
+import { login } from '@/api/user';
 import { HOME_PATH, isTabBarPath, LOGIN_PATH, removeQueryString } from '@/router';
 import { setToken } from '@/utils/auth';
-import uCode from 'uview-plus/components/u-code/u-code.vue';
-// import { useUserStore } from '@/store';
 
-// const userStore = useUserStore();
-const tel = ref<string>('18502811111');
-const code = ref<string>('1234');
-const tips = ref<string>();
-const uCodeRef = ref<InstanceType<typeof uCode> | null>(null);
+const login_name = ref<string>('18502811111');
+const captcha = ref<string>('');
+const password = ref<string>('');
+const passwordErrorCount = ref<number>(0);
+const captchaUrl = ref<string>('');
 let redirect = HOME_PATH;
-
-const inputStyle = computed<CSSProperties>(() => {
-  const style = {} as CSSProperties;
-  if (tel.value && code.value) {
-    style.color = '#fff';
-    style.backgroundColor = uni.$u.color.warning;
-  }
-  return style;
-});
-
-function codeChange(text: string) {
-  tips.value = text;
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+// 刷新验证码
+function refreshCaptcha() {
+  // 添加时间戳参数避免缓存
+  captchaUrl.value = `${baseUrl}/user/captcha?t=${new Date().getTime()}`;
 }
 
-function getCode() {
-  if (uCodeRef.value?.canGetCode) {
-    // 模拟向后端请求验证码
-    uni.showLoading({
-      title: '正在获取验证码',
-    });
-    setTimeout(() => {
-      uni.hideLoading();
-      uni.$u.toast('验证码已发送');
-      // 通知验证码组件内部开始倒计时
-      uCodeRef.value?.start();
-    }, 1000);
-  }
-  else {
-    uni.$u.toast('倒计时结束后再发送');
-  }
-}
 async function submit() {
-  if (!uni.$u.test.mobile(Number(tel.value))) {
-    uni.$u.toast('请输入正确的手机号');
-    return;
-  }
-  if (!code.value) {
-    uni.$u.toast('请输入验证码');
-    return;
-  }
-  // 登录请求
-  // const res = await userStore.login({ phone: tel.value, code: code.value }).catch(() => {
-  //   uni.$u.toast('登录失败');
-  // });
-  // if (!res) return;
-  setToken('1234567890');
-  setTimeout(() => {
-    uni.$u.route({
-      type: isTabBarPath(redirect) ? 'switchTab' : 'redirectTo',
-      url: redirect,
+  // 表单验证
+  if (!login_name.value) {
+    uni.showToast({
+      title: '请输入手机号/邮箱',
+      icon: 'none',
     });
-  }, 800);
+    return;
+  }
+
+  if (!password.value) {
+    uni.showToast({
+      title: '请输入密码',
+      icon: 'none',
+    });
+    return;
+  }
+
+  // 如果已经显示验证码，则验证验证码
+  if (passwordErrorCount.value > 0 && !captcha.value) {
+    uni.showToast({
+      title: '请输入验证码',
+      icon: 'none',
+    });
+    return;
+  }
+
+  try {
+    const res = await login({
+      login_name: login_name.value,
+      password: password.value,
+      captcha: passwordErrorCount.value > 0 ? captcha.value : undefined,
+    });
+
+    setToken(res.token);
+
+    // 登录成功后跳转
+    uni.showToast({
+      title: '登录成功',
+      icon: 'success',
+    });
+
+    setTimeout(() => {
+      uni.redirectTo({
+        url: redirect,
+      });
+    }, 1500);
+  }
+  catch {
+    // 密码错误，增加错误计数
+    passwordErrorCount.value++;
+
+    // 如果是第一次密码错误，显示验证码
+    if (passwordErrorCount.value === 1) {
+      refreshCaptcha();
+    }
+    else {
+      // 如果已经显示验证码，则刷新验证码
+      if (passwordErrorCount.value > 1) {
+        refreshCaptcha();
+      }
+    }
+
+    uni.showToast({
+      title: '用户名或密码错误',
+      icon: 'none',
+    });
+  }
 }
 
-onLoad((options: any) => {
+onLoad(async (options: any) => {
   if (options.redirect && removeQueryString(options.redirect) !== LOGIN_PATH) {
     redirect = decodeURIComponent(options.redirect);
   }
@@ -124,57 +131,103 @@ onLoad((options: any) => {
 </script>
 
 <style lang="scss" scoped>
-.login-form-wrap {
-  @apply mt-80rpx mx-auto mb-0 w-600rpx;
+.login-container {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-image: url('@/static/images/login/login_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-  .title {
-    @apply mb-100rpx text-60rpx text-left font-500;
+.header {
+  padding: 80rpx 40rpx;
+
+  .hello {
+    font-size: 60rpx;
+    font-weight: bold;
+    color: #e53935;
+    font-style: italic;
   }
 
-  input {
-    @apply pb-6rpx mb-10rpx text-left;
-  }
-
-  .tips {
-    @apply mt-8rpx mb-60rpx;
-
-    color: $u-info;
-  }
-
-  .login-btn {
-    @apply flex items-center justify-center py-12rpx px-0 text-30rpx bg-#fdf3d0 border-none;
-
-    color: $u-tips-color;
-
-    &::after {
-      @apply border-none;
-    }
-  }
-
-  .alternative {
-    @apply flex justify-between mt-30rpx;
-
-    color: $u-tips-color;
+  .welcome {
+    font-size: 60rpx;
+    font-weight: bold;
+    color: #333;
+    font-style: italic;
   }
 }
 
-.login-type-wrap {
-  @apply flex justify-between pt-350rpx px-150rpx pb-150rpx;
+.login-form-wrap {
+  margin: 0 40rpx;
+  padding: 40rpx;
+  border-radius: 20rpx;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 20rpx rgba(0, 0, 0, 0.05);
 
-  .item {
-    @apply flex items-center flex-col text-28rpx;
+  .title {
+    font-size: 40rpx;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 60rpx;
+  }
 
-    color: $u-content-color;
+  .input-item {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 40rpx;
+    position: relative;
+
+    input {
+      height: 90rpx;
+      font-size: 32rpx;
+    }
+  }
+
+  .captcha-container {
+    display: flex;
+    align-items: center;
+
+    input {
+      flex: 1;
+    }
+
+    .captcha-img {
+      width: 200rpx;
+      height: 80rpx;
+      margin-left: 20rpx;
+    }
+  }
+
+  .placeholder {
+    color: #999;
+  }
+
+  .login-btn {
+    margin-top: 60rpx;
+    height: 90rpx;
+    line-height: 90rpx;
+    background-color: #e53935;
+    color: #fff;
+    font-size: 32rpx;
+    border-radius: 45rpx;
   }
 }
 
 .hint {
-  @apply px-40rpx py-20rpx text-24rpx;
-
-  color: $u-tips-color;
+  position: absolute;
+  bottom: 40rpx;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 24rpx;
+  color: #999;
+  padding: 0 40rpx;
 
   .link {
-    color: $u-warning;
+    color: #e53935;
   }
 }
 </style>

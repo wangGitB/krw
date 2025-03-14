@@ -10,15 +10,15 @@ export interface ProfileRes {
 }
 
 export interface LoginReq {
-  phone: string;
-  code: string;
+  login_name: string;
+  password: string;
+  captcha?: string;
 }
 
 export interface LoginRes {
   token: string;
-  user_id: number;
-  user_name: string;
-  avatar: string;
+  role: string;
+  need_captcha: boolean;
 }
 
 export interface LoginByCodeReq {
