@@ -20,11 +20,3 @@ export interface LoginRes {
   role: string;
   need_captcha: boolean;
 }
-
-export interface LoginByCodeReq {
-  code: string;
-}
-
-export interface LoginByCodeRes {
-  [key: string]: any;
-}

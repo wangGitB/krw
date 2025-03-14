@@ -17,13 +17,15 @@
     {
       "path": "pages/tab/list/index",
       "style": {
-        "navigationBarTitleText": "历史订单"
+        // "navigationBarTitleText": "历史订单"
+        "navigationStyle": "custom"
       }
     },
     {
       "path": "pages/tab/withdrawal/index",
       "style": {
-        "navigationBarTitleText": "提币"
+        // "navigationBarTitleText": "提币"
+        "navigationStyle": "custom"
       }
     },
     {
@@ -41,7 +43,7 @@
         {
           "path": "login/index",
           "style": {
-            "navigationBarTitleText": "登录",
+            // "navigationBarTitleText": "登录"
             "navigationStyle": "custom"
           }
         },
@@ -54,7 +56,14 @@
         {
           "path": "404/index",
           "style": {
-            "navigationBarTitleText": "404",
+            // "navigationBarTitleText": "404",
+            "navigationStyle": "custom"
+          }
+        },
+        {
+          "path": "google-code/index",
+          "style": {
+            // "navigationBarTitleText": "谷歌验证码",
             "navigationStyle": "custom"
           }
         }

@@ -29,9 +29,8 @@ defineProps({
   },
 });
 
+const emit = defineEmits(['back']);
 const handleBack = () => {
-  uni.navigateBack({
-    delta: 1,
-  });
+  emit('back');
 };
 </script>

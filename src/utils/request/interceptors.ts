@@ -4,13 +4,13 @@ import type {
   HttpRequestConfig,
   HttpResponse,
 } from 'uview-plus/libs/luch-request/index';
-import { useUserStore } from '@/store';
+// import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
 import storage from '@/utils/storage';
 import { showMessage } from './status';
 
 // 重试队列，每一项将是一个待执行的函数形式
-let requestQueue: (() => void)[] = [];
+// const requestQueue: (() => void)[] = [];
 
 // 防止重复提交
 const repeatSubmit = (config: HttpRequestConfig) => {
@@ -40,32 +40,32 @@ const repeatSubmit = (config: HttpRequestConfig) => {
 };
 
 // 是否正在刷新token的标记
-let isRefreshing: boolean = false;
+// const isRefreshing: boolean = false;
 
 // 刷新token
-const refreshToken = async (http: HttpRequestAbstract, config: HttpRequestConfig) => {
-  // 是否在获取token中,防止重复获取
-  if (!isRefreshing) {
-    // 修改登录状态为true
-    isRefreshing = true;
-    // 等待登录完成
-    await useUserStore().authLogin();
-    // 登录完成之后，开始执行队列请求
-    requestQueue.forEach(cb => cb());
-    // 重试完了清空这个队列
-    requestQueue = [];
-    isRefreshing = false;
-    // 重新执行本次请求
-    return http.request(config);
-  }
+// const refreshToken = async (http: HttpRequestAbstract, config: HttpRequestConfig) => {
+//   // 是否在获取token中,防止重复获取
+//   if (!isRefreshing) {
+//     // 修改登录状态为true
+//     isRefreshing = true;
+//     // 等待登录完成
+//     await useUserStore().authLogin();
+//     // 登录完成之后，开始执行队列请求
+//     requestQueue.forEach(cb => cb());
+//     // 重试完了清空这个队列
+//     requestQueue = [];
+//     isRefreshing = false;
+//     // 重新执行本次请求
+//     return http.request(config);
+//   }
 
-  return new Promise<HttpResponse<any>>((resolve) => {
-    // 将resolve放进队列，用一个函数形式来保存，等登录后直接执行
-    requestQueue.push(() => {
-      resolve(http.request(config));
-    });
-  });
-};
+//   return new Promise<HttpResponse<any>>((resolve) => {
+//     // 将resolve放进队列，用一个函数形式来保存，等登录后直接执行
+//     requestQueue.push(() => {
+//       resolve(http.request(config));
+//     });
+//   });
+// };
 
 function requestInterceptors(http: HttpRequestAbstract) {
   /**
@@ -83,8 +83,9 @@ function requestInterceptors(http: HttpRequestAbstract) {
       // 是否需要设置 token
       const isToken = custom?.auth === false;
       if (getToken() && !isToken && config.header) {
-        // token设置
-        config.header.token = getToken();
+        // token设置 - 从local中获取admin-token并添加到headers的Authorization中
+        const token = getToken();
+        config.header.Authorization = `Bearer ${token}`;
       }
 
       // 是否显示 loading
@@ -120,9 +121,9 @@ function responseInterceptors(http: HttpRequestAbstract) {
     const custom = config?.custom;
 
     // 登录状态失效，重新登录
-    if (data.code === 401) {
-      return refreshToken(http, config);
-    }
+    // if (data.code === 401) {
+    //   return refreshToken(http, config);
+    // }
 
     // 隐藏loading
     if (custom?.loading) {
@@ -130,13 +131,13 @@ function responseInterceptors(http: HttpRequestAbstract) {
     }
 
     // 请求成功则返回结果
-    if (data.code === 200) {
+    if (data.code === 0) {
       return response || {};
     }
 
     // 如果没有显式定义custom的toast参数为false的话，默认对报错进行toast弹出提示
     if (custom?.toast !== false) {
-      uni.$u.toast(data.message);
+      uni.$u.toast(data.msg);
     }
 
     // 请求失败则抛出错误
@@ -144,7 +145,6 @@ function responseInterceptors(http: HttpRequestAbstract) {
   }, (response: HttpError) => {
     // 自定义参数
     const custom = response.config?.custom;
-
     // 隐藏loading
     if (custom?.loading !== false) {
       uni.hideLoading();
@@ -155,7 +155,6 @@ function responseInterceptors(http: HttpRequestAbstract) {
       const message = response.statusCode ? showMessage(response.statusCode) : '网络连接异常,请稍后再试!';
       uni.$u.toast(message);
     }
-
     return Promise.reject(response);
   });
 }
