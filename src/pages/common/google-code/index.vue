@@ -20,7 +20,6 @@
             font-size="24px"
             class="verification-code-input w-full"
             :size="boxSize"
-            @finish="onCodeFinish"
           />
         </view>
         <view class="mt-[50rpx]">
@@ -57,7 +56,6 @@
           font-size="24px"
           class="verification-code-input mb-[20rpx] w-full"
           :size="boxSize"
-          @finish="onCodeFinish"
         />
       </view>
       <u-button
@@ -82,9 +80,7 @@ const googleCode = ref('');
 const isBoundGoogleCode = ref(false);
 const googleCodeKey = ref('');
 const isLoading = ref(false);
-const bindGoogleCodeFn = async () => {
-  await bindGoogleCode();
-};
+
 const getGoogleCodeFn = async () => {
   isLoading.value = true;
   try {
@@ -93,7 +89,6 @@ const getGoogleCodeFn = async () => {
       googleCode.value = res.code;
       isBoundGoogleCode.value = true;
       googleCodeKey.value = res.id;
-      bindGoogleCodeFn();
     }
   }
   catch (error) {
@@ -123,13 +118,20 @@ onMounted(() => {
 });
 
 const handleClick = async () => {
-  // 校验google验证码并跳转home
-  await verifyGoogleCode({
+  // 校验google验证码并bind然后跳转home
+  await bindGoogleCode({
     code: verificationCode.value,
   });
-};
-const onCodeFinish = (code: string) => {
-  console.log('验证码输入完成:', code);
+  uni.showToast({
+    title: '绑定成功',
+    icon: 'success',
+  });
+  setTimeout(() => {
+    uni.$u.route({
+      type: 'switchTab',
+      url: '/pages/tab/home/index',
+    });
+  }, 800);
 };
 const handleBack = () => {
   uni.navigateTo({
@@ -142,9 +144,15 @@ const onConfirm = async () => {
       code: verificationCode.value,
     });
     uni.showToast({
-      title: '验证码提交成功',
+      title: '验证成功',
       icon: 'success',
     });
+    setTimeout(() => {
+      uni.$u.route({
+        type: 'switchTab',
+        url: '/pages/tab/home/index',
+      });
+    }, 800);
   }
 };
 </script>
