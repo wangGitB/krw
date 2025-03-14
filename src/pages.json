@@ -35,6 +35,27 @@
         "navigationStyle": "custom"
       }
       // "needLogin": true
+    },
+    {
+      "path": "pages/order/detail/index",
+      "style": {
+        "navigationStyle": "custom",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/user/modify-password/index",
+      "style": {
+        "navigationBarTitleText": "修改密码",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/user/transaction-password/index",
+      "style": {
+        "navigationBarTitleText": "设置交易密码",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "subPackages": [

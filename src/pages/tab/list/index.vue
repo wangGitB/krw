@@ -13,43 +13,49 @@
     @query="queryList"
   >
     <!-- 顶部筛选栏 -->
-    <view class="filter-bar">
-      <view class="filter-item" @click="togglePriceTypePopup">
+    <view class="flex items-center border-b border-gray-100 bg-white p-30rpx">
+      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="togglePriceTypePopup">
         {{ currentPriceType }}
-        <u-icon name="arrow-down-fill" size="14" color="#999" />
+        <view class="ml-20rpx flex items-center">
+          <u-icon name="arrow-down-fill" size="14" color="#999" />
+        </view>
       </view>
-      <view class="divider">
+      <view class="mx-20rpx text-gray-300">
         |
       </view>
-      <view class="filter-item" @click="toggleDirectionPopup">
+      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="toggleDirectionPopup">
         {{ currentDirection }}
-        <u-icon name="arrow-down-fill" size="14" color="#999" />
+        <view class="ml-20rpx flex items-center">
+          <u-icon name="arrow-down-fill" size="14" color="#999" />
+        </view>
       </view>
-      <view class="filter-item" @click="showDateRangePicker">
+      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="showDateRangePicker">
         {{ currentTime }}
-        <u-icon name="arrow-down-fill" size="14" color="#999" />
+        <view class="ml-20rpx flex items-center">
+          <u-icon name="arrow-down-fill" size="14" color="#999" />
+        </view>
       </view>
-      <view class="filter-icon">
+      <view class="ml-auto">
         <u-icon name="list" size="24" color="#333" />
       </view>
     </view>
 
     <!-- 价格类型选择弹出层 -->
-    <view v-if="showPriceTypePopup" class="price-type-popup">
-      <view class="popup-item" @click="selectPriceType('市价')">
+    <view v-if="showPriceTypePopup" class="absolute left-0 top-90rpx z-100 w-240rpx bg-white shadow-md">
+      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
         市价
       </view>
-      <view class="popup-item" @click="selectPriceType('限价')">
+      <view class="px-30rpx py-24rpx text-28rpx" @click="selectPriceType('限价')">
         限价
       </view>
     </view>
 
     <!-- 方向选择弹出层 -->
-    <view v-if="showDirectionPopup" class="direction-popup">
-      <view class="popup-item" @click="selectDirection('买入')">
+    <view v-if="showDirectionPopup" class="absolute left-240rpx top-90rpx z-100 w-240rpx bg-white shadow-md">
+      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
         买入
       </view>
-      <view class="popup-item" @click="selectDirection('卖出')">
+      <view class="px-30rpx py-24rpx text-28rpx" @click="selectDirection('卖出')">
         卖出
       </view>
     </view>
@@ -70,57 +76,65 @@
     />
 
     <!-- 订单列表 -->
-    <view v-for="(item, index) in dataList" :key="index" class="order-item">
-      <view class="order-header">
-        <view class="order-pair">
+    <view
+      v-for="(item, index) in dataList"
+      :key="index"
+      class="m-20rpx overflow-hidden rounded-16rpx bg-white shadow-sm"
+      @click="goToOrderDetail(item)"
+    >
+      <view class="flex items-center border-b border-gray-50 p-24rpx">
+        <view class="text-32rpx text-gray-800 font-bold">
           {{ item.symbol }}
         </view>
-        <view class="order-type" :class="[item.type === 'BUY' ? 'buy-type' : 'sell-type']">
+        <view
+          class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
+          :class="item.type === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
+        >
           {{ item.type === 'BUY' ? '买入' : '卖出' }}
         </view>
-        <view class="order-type-tag">
+        <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
           {{ item.orderType }}
         </view>
-        <view class="order-time">
+        <view class="ml-auto text-24rpx text-gray-500">
           {{ item.time }}
         </view>
       </view>
 
-      <view class="order-content">
-        <view class="order-price-col">
-          <view class="price-value">
+      <view class="flex border-b border-gray-50 p-30rpx">
+        <view class="flex flex-1 flex-col">
+          <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.price }}
           </view>
-          <view class="price-label">
+          <view class="text-24rpx text-gray-500">
             委托价格(USDT)
           </view>
         </view>
-        <view class="order-price-col">
-          <view class="price-value">
+        <view class="flex flex-1 flex-col">
+          <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.avgPrice }}
           </view>
-          <view class="price-label">
+          <view class="text-24rpx text-gray-500">
             成交均价
           </view>
         </view>
-        <view class="order-amount-col">
-          <view class="amount-value">
+        <view class="flex flex-1 flex-col">
+          <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.amount }}
           </view>
-          <view class="amount-label">
+          <view class="text-24rpx text-gray-500">
             成交/委托数量(HSK)
           </view>
         </view>
       </view>
 
-      <view class="order-footer">
-        <view class="fee-info">
+      <view class="flex items-center p-24rpx">
+        <view class="mr-30rpx text-24rpx text-gray-600">
           交易手续费: {{ item.fee }}
         </view>
-        <view class="fee-info">
+        <view class="text-24rpx text-gray-600">
           手续费抵扣: {{ item.feeProfit }}
         </view>
-        <view class="order-status">
+        <view class="ml-auto flex items-center text-28rpx text-red-500">
           {{ item.status }} <u-icon name="arrow-right" color="#ff0000" size="14" />
         </view>
       </view>
@@ -128,7 +142,7 @@
 
     <!-- 自定义底部 -->
     <template #loadingMoreNoMoreLine>
-      <view class="custom-no-more">
+      <view class="py-30rpx text-center text-28rpx text-gray-500">
         没有更多数据了
       </view>
     </template>
@@ -311,163 +325,19 @@ function queryList(pageNo: number, pageSize: number) {
     pagingRef.value?.complete(mockData);
   }, 1000);
 }
+
+function goToOrderDetail(item: OrderItem) {
+  // 将订单数据转为字符串，通过 URL 参数传递
+  const orderData = encodeURIComponent(JSON.stringify(item));
+  uni.navigateTo({
+    url: `/pages/order/detail/index?orderData=${orderData}`,
+  });
+}
+
 const language = uni.getSystemInfoSync().language;
 console.log('[ language ] >', language);
 </script>
 
 <style lang="scss" scoped>
-.filter-bar {
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  background-color: #fff;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  margin-right: 15px;
-  font-size: 14px;
-  color: #333;
-}
-
-.divider {
-  margin: 0 10px;
-  color: #ddd;
-}
-
-.filter-icon {
-  margin-left: auto;
-}
-
-.price-type-popup {
-  position: absolute;
-  top: 45px;
-  left: 0;
-  z-index: 100;
-  width: 120px;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
-}
-
-.popup-item {
-  padding: 12px 15px;
-  font-size: 14px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.order-item {
-  margin: 10px;
-  overflow: hidden;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 5%);
-}
-
-.order-header {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.order-pair {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.order-type {
-  padding: 2px 8px;
-  margin-left: 10px;
-  font-size: 12px;
-  border-radius: 4px;
-}
-
-.buy-type {
-  color: #52c41a;
-  background-color: rgb(82 196 26 / 10%);
-}
-
-.sell-type {
-  color: #ff4d4f;
-  background-color: rgb(255 77 79 / 10%);
-}
-
-.order-type-tag {
-  padding: 2px 8px;
-  margin-left: 10px;
-  font-size: 12px;
-  color: #ff9800;
-  background-color: rgb(255 152 0 / 10%);
-  border-radius: 4px;
-}
-
-.order-time {
-  margin-left: auto;
-  font-size: 12px;
-  color: #999;
-}
-
-.order-content {
-  display: flex;
-  padding: 15px;
-  border-bottom: 1px solid #f5f5f5;
-}
-
-.order-price-col, .order-amount-col {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.price-value, .amount-value {
-  margin-bottom: 5px;
-  font-size: 18px;
-  font-weight: bold;
-  color: #333;
-}
-
-.price-label, .amount-label {
-  font-size: 12px;
-  color: #999;
-}
-
-.order-footer {
-  display: flex;
-  align-items: center;
-  padding: 12px 15px;
-}
-
-.fee-info {
-  margin-right: 15px;
-  font-size: 12px;
-  color: #666;
-}
-
-.order-status {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  font-size: 14px;
-  color: #ff4d4f;
-}
-
-.direction-popup {
-  position: absolute;
-  top: 45px;
-  left: 120px; /* 调整位置，使其在方向筛选下方 */
-  z-index: 100;
-  width: 120px;
-  background-color: #fff;
-  box-shadow: 0 2px 10px rgb(0 0 0 / 10%);
-}
-
-.custom-no-more {
-  padding: 15px 0;
-  font-size: 14px;
-  color: #999;
-  text-align: center;
-}
+/* 移除所有旧样式，使用UnoCSS原子类替代 */
 </style>
