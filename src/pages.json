@@ -12,21 +12,22 @@
       "path": "pages/tab/home/index",
       "style": {
         "navigationStyle": "custom"
-      }
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/list/index",
       "style": {
-        // "navigationBarTitleText": "历史订单"
         "navigationStyle": "custom"
-      }
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/withdrawal/index",
       "style": {
-        // "navigationBarTitleText": "提币"
         "navigationStyle": "custom"
-      }
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/user/index",
@@ -43,7 +44,6 @@
         {
           "path": "login/index",
           "style": {
-            // "navigationBarTitleText": "登录"
             "navigationStyle": "custom"
           }
         },
@@ -56,7 +56,7 @@
         {
           "path": "404/index",
           "style": {
-            // "navigationBarTitleText": "404",
+            "navigationBarTitleText": "404",
             "navigationStyle": "custom"
           }
         },

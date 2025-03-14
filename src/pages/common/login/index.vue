@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { login, loginByCode } from '@/api/user';
-import { HOME_PATH, isTabBarPath, LOGIN_PATH, removeQueryString } from '@/router';
+// import { LOGIN_PATH, removeQueryString } from '@/router';
 import { setToken } from '@/utils/auth';
 
 const login_name = ref<string>('');
@@ -53,7 +53,7 @@ const captcha = ref<string>('');
 const password = ref<string>('');
 const showCaptcha = ref<boolean>(false);
 const captchaUrl = ref<string>('');
-let redirect = HOME_PATH;
+// let redirect = HOME_PATH;
 
 // 刷新验证码
 async function refreshCaptcha() {
@@ -101,10 +101,6 @@ async function submit() {
     });
     setToken(res.token);
     setTimeout(() => {
-      // uni.$u.route({
-      //   type: isTabBarPath(redirect) ? 'switchTab' : 'redirectTo',
-      //   url: redirect,
-      // });
       uni.$u.route({
         type: 'redirectTo',
         url: '/pages/common/google-code/index',
@@ -119,11 +115,11 @@ async function submit() {
   }
 }
 
-onLoad(async (options: any) => {
-  if (options.redirect && removeQueryString(options.redirect) !== LOGIN_PATH) {
-    redirect = decodeURIComponent(options.redirect);
-  }
-});
+// onLoad(async (options: any) => {
+//   if (options.redirect && removeQueryString(options.redirect) !== LOGIN_PATH) {
+//     redirect = decodeURIComponent(options.redirect);
+//   }
+// });
 </script>
 
 <style lang="scss" scoped>

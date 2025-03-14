@@ -13,13 +13,22 @@
 </template>
 
 <script lang="ts" setup>
-import { HOME_PATH } from '@/router';
+import { HOME_PATH, LOGIN_PATH } from '@/router';
+import { getToken } from '@/utils/auth';
 
 function handleBack() {
-  uni.$u.route({
-    type: 'switchTab',
-    url: HOME_PATH,
-  });
+  if (getToken()) {
+    uni.$u.route({
+      type: 'switchTab',
+      url: HOME_PATH,
+    });
+  }
+  else {
+    uni.$u.route({
+      type: 'redirectTo',
+      url: LOGIN_PATH,
+    });
+  }
 }
 </script>
 

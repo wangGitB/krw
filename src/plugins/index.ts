@@ -13,6 +13,7 @@ export default {
     setupStore(app);
     // 国际化
     setupI18n(app);
+
     // 路由拦截
     setupPermission();
     // 网络请求

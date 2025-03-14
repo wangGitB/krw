@@ -94,8 +94,8 @@
         <view class="relative mt-[24rpx]">
           <slider
             :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
-            :active-color="activeTab === 'buy' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom" @change="handleSliderChange"
-            @changing="handleSliderChanging"
+            :active-color="activeTab === 'buy' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
+            @change="handleSliderChange" @changing="handleSliderChanging"
           />
         </view>
         <!-- 交易额显示 -->
@@ -276,6 +276,7 @@
 </template>
 
 <script setup lang="ts">
+import { LOGIN_PATH } from '@/router';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -284,6 +285,7 @@ import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
 import { useUserStore } from '@/store';
+import { getToken, isLogin } from '@/utils';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const home_icon_list = ref([
@@ -354,10 +356,6 @@ let priceUpdateTimer: number | null = null;
 
 // 添加点击其他区域关闭 tooltip
 onMounted(() => {
-  uni.setNavigationBarTitle({
-    title: '行情',
-  });
-
   // 每 2 秒更新一次价格
   // eslint-disable-next-line ts/no-use-before-define
   priceUpdateTimer = setInterval(updatePrice, 2000);

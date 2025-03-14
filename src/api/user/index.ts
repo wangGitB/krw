@@ -19,3 +19,9 @@ export const logout = () => post<CommonRes>('/user/logout');
 
 /** 谷歌验证码 */
 export const getGoogleCode = () => get('/user/google');
+
+/** 绑定谷歌验证码 */
+export const bindGoogleCode = () => post('/user/google/bind');
+
+/** 验证码校验 */
+export const verifyGoogleCode = (data: any) => post('/user/google/verify', { data });
