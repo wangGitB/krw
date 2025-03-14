@@ -276,7 +276,7 @@
 </template>
 
 <script setup lang="ts">
-import { LOGIN_PATH } from '@/router';
+// import { LOGIN_PATH } from '@/router';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -285,7 +285,7 @@ import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
 import { useUserStore } from '@/store';
-import { getToken, isLogin } from '@/utils';
+// import { getToken, isLogin } from '@/utils';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const home_icon_list = ref([

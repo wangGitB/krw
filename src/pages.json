@@ -12,29 +12,29 @@
       "path": "pages/tab/home/index",
       "style": {
         "navigationStyle": "custom"
-      },
-      "needLogin": true
+      }
+      // "needLogin": true
     },
     {
       "path": "pages/tab/list/index",
       "style": {
         "navigationStyle": "custom"
-      },
-      "needLogin": true
+      }
+      // "needLogin": true
     },
     {
       "path": "pages/tab/withdrawal/index",
       "style": {
         "navigationStyle": "custom"
-      },
-      "needLogin": true
+      }
+      // "needLogin": true
     },
     {
       "path": "pages/tab/user/index",
       "style": {
         "navigationStyle": "custom"
-      },
-      "needLogin": true
+      }
+      // "needLogin": true
     }
   ],
   "subPackages": [
@@ -63,7 +63,6 @@
         {
           "path": "google-code/index",
           "style": {
-            // "navigationBarTitleText": "谷歌验证码",
             "navigationStyle": "custom"
           }
         }
