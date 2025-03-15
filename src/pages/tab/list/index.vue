@@ -140,42 +140,54 @@
       <view class="flex border-b border-gray-50 p-30rpx">
         <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
-            {{ item.price }}
+            {{ item.price || '--' }}
           </view>
           <view class="text-24rpx text-gray-500">
-            委托价格 (USDT)
+            {{ item.make_type === 'MARKET' ? '市价委托' : '委托价格 (USDT)' }}
           </view>
         </view>
         <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
-            {{ item.avg_price }}
+            {{ item.avg_price || '--' }}
           </view>
           <view class="text-24rpx text-gray-500">
-            成交均价
+            成交均价 (USDT)
           </view>
         </view>
         <view class="flex flex-1 flex-col items-center">
-          <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
-            {{ item.deal_amount }}/{{ item.amount }}
+          <view class="mb-10rpx flex items-center text-36rpx text-gray-800 font-bold">
+            <text class="shrink-0">
+              {{ item.deal_amount || '0' }}
+            </text>
+            <text class="shrink-0">
+              /
+            </text>
+            <text class="shrink-0">
+              {{ item.amount || '0' }}
+            </text>
           </view>
-          <view class="text-24rpx text-gray-500">
-            成交/委托数量
+          <view class="whitespace-nowrap text-24rpx text-gray-500">
+            成交/委托数量 ({{ item.symbol.split('/')[1] }})
           </view>
         </view>
       </view>
 
-      <view class="flex items-center p-24rpx">
-        <view class="mr-30rpx text-24rpx text-gray-600">
-          交易手续费: {{ item.fee }}
+      <view class="flex items-center justify-between p-24rpx">
+        <view class="w-[30%] truncate text-24rpx text-gray-600">
+          <text class="whitespace-nowrap">
+            交易手续费: {{ formatNumber(item.fee) }}
+          </text>
         </view>
-        <view class="mr-30rpx text-24rpx text-gray-600">
-          手续费利润: {{ item.fee_symboml }}
+        <!-- TODO: 手续费利润 -->
+        <view class="no-scrollbar w-[35%] overflow-x-auto text-center text-24rpx text-gray-600">
+          <text class="whitespace-nowrap">
+            手续费利润: {{ item.volume ? formatNumber(item.volume) : '0.00' }}
+          </text>
         </view>
-        <view
-          class="ml-auto rounded-full px-16rpx py-4rpx text-24rpx"
-          :class="getStatusClass(item.status)"
-        >
-          {{ getStatusText(item.status) }}
+        <view class="w-[30%] text-right">
+          <text :class="getStatusClass(item.status)" class="inline-block whitespace-nowrap rounded-md px-16rpx py-4rpx text-24rpx">
+            {{ getStatusText(item.status) }}
+          </text>
         </view>
       </view>
     </view>
@@ -193,6 +205,8 @@
 import type { OrderItem } from './types';
 import { getOrderList } from '@/api/list';
 import { ref } from 'vue';
+import { OrderStatus } from './types';
+import { formatNumber } from './utils';
 
 const pagingRef = ref<InstanceType<typeof zPaging> | null>(null);
 const dataList = ref<OrderItem[]>([]);
@@ -326,25 +340,28 @@ function goToOrderDetail(item: OrderItem) {
   });
 }
 
-// 添加状态样式处理函数
-function getStatusClass(status: string) {
-  const statusMap: Record<string, string> = {
-    MAKE_ORDER: 'bg-blue-50 text-blue-600',
-    ORDER_ALL_CANCELED: 'bg-gray-50 text-gray-600',
-    ORDER_CANCELING: 'bg-yellow-50 text-yellow-600',
-    ORDER_COMPLETED: 'bg-green-50 text-green-600',
-    ORDER_FAILED: 'bg-red-50 text-red-600',
+// 修改状态样式处理函数
+function getStatusClass(status: OrderStatus) {
+  const statusMap: Record<OrderStatus, string> = {
+    [OrderStatus.INIT]: 'bg-blue-50 text-blue-600',
+    [OrderStatus.MAKE_ORDER || OrderStatus.MAKE_ORDER]: 'bg-blue-50 text-blue-600',
+    [OrderStatus.ORDER_CANCELING]: 'bg-yellow-50 text-yellow-600',
+    [OrderStatus.ORDER_ALL_CANCELED]: 'bg-gray-50 text-gray-600',
+    [OrderStatus.ORDER_PARTIALLY_CANCELED]: 'bg-orange-50 text-orange-600',
+    [OrderStatus.ORDER_FINISHED]: 'bg-green-50 text-green-600',
   };
   return statusMap[status] || 'bg-gray-50 text-gray-600';
 }
 
-function getStatusText(status: string) {
-  const statusMap: Record<string, string> = {
-    MAKE_ORDER: '进行中',
-    ORDER_ALL_CANCELED: '已取消',
-    ORDER_CANCELING: '取消中',
-    ORDER_COMPLETED: '已完成',
-    ORDER_FAILED: '失败',
+// 订单状态文本显示函数
+function getStatusText(status: OrderStatus) {
+  const statusMap: Record<OrderStatus, string> = {
+    [OrderStatus.INIT]: '处理中',
+    [OrderStatus.MAKE_ORDER || OrderStatus.MAKE_ORDER]: '取消中',
+    [OrderStatus.ORDER_CANCELING]: '取消中',
+    [OrderStatus.ORDER_ALL_CANCELED]: '全部取消',
+    [OrderStatus.ORDER_PARTIALLY_CANCELED]: '部分取消',
+    [OrderStatus.ORDER_FINISHED]: '全部成交',
   };
   return statusMap[status] || status;
 }
@@ -357,5 +374,14 @@ function getStatusText(status: string) {
   right: 0;
   left: 0;
   z-index: 9;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>
