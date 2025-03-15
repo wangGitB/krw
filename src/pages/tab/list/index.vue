@@ -1,5 +1,4 @@
 <template>
-  <c-header title="历史订单" :show-back="false" class="fixed left-0 right-0 top-0 z-10" />
   <z-paging
     ref="pagingRef" v-model="dataList"
     :auto-height="true"
@@ -15,27 +14,28 @@
     class="bg-white"
     @query="queryList"
   >
+    <c-header title="历史订单" :show-back="false" class="relative z-10" />
     <!-- 顶部筛选栏 -->
     <view class="fixed-filter-bar flex items-center border-b border-gray-100 bg-white p-30rpx">
       <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="togglePriceTypePopup">
         {{ currentPriceType }}
         <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="14" color="#999" />
+          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
         </view>
       </view>
-      <view class="mx-20rpx text-gray-300">
+      <!-- <view class="mx-20rpx text-gray-300">
         |
-      </view>
+      </view> -->
       <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="toggleDirectionPopup">
         {{ currentDirection }}
         <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="14" color="#999" />
+          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
         </view>
       </view>
       <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="showDateRangePicker">
         {{ currentTime }}
         <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="14" color="#999" />
+          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
         </view>
       </view>
       <view class="ml-auto">
@@ -44,7 +44,7 @@
     </view>
 
     <!-- 为筛选栏添加占位 -->
-    <view class="h-200rpx" />
+    <!-- <view class="h-200rpx" /> -->
 
     <!-- 价格类型选择弹出层 -->
     <u-popup
@@ -55,7 +55,7 @@
       :z-index="20"
       @close="showPriceTypePopup = false"
     >
-      <view class="mt-[88rpx] bg-white">
+      <view class="bg-white">
         <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
           市价
         </view>
@@ -74,7 +74,7 @@
       :z-index="20"
       @close="showDirectionPopup = false"
     >
-      <view class="mt-[88rpx] bg-white">
+      <view class="bg-white">
         <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
           买入
         </view>
@@ -83,25 +83,6 @@
         </view>
       </view>
     </u-popup>
-
-    <!-- 日期范围选择器 -->
-    <u-calendar
-      :show="showDatePickerPopup"
-      mode="range"
-      :z-index="20"
-      :top="88"
-      :safe-area-inset-top="false"
-      :month-num="12"
-      :show-month="true"
-      :show-subtitle="true"
-      :show-month-btn="true"
-      start-text="开始"
-      end-text="结束"
-      color="#2979ff"
-      :week-text="['日', '一', '二', '三', '四', '五', '六']"
-      @confirm="confirmDateRange"
-      @close="cancelDate"
-    />
 
     <!-- 订单列表 -->
     <view
@@ -199,6 +180,27 @@
       </view>
     </template>
   </z-paging>
+  <!-- 日期范围选择器 -->
+  <u-calendar
+    :show="showDatePickerPopup"
+    mode="range"
+    :top="88"
+    :safe-area-inset-top="false"
+    :month-num="12"
+    :show-month="true"
+    :show-subtitle="true"
+    :show-month-btn="true"
+    start-text="开始"
+    end-text="结束"
+    color="#2979ff"
+    :max-date="maxDate"
+    :min-date="minDate"
+    :default-date="startDate ? startDate : ''"
+    :default-end-date="endDate ? endDate : ''"
+    :round="10"
+    @confirm="confirmDateRange"
+    @close="cancelDate"
+  />
 </template>
 
 <script setup lang="ts">
@@ -235,6 +237,14 @@ const queryParams = ref<QueryParams>({
   current: 1,
   status: 2, // 默认查询所有订单
 });
+
+// 添加最大和最小日期限制
+const maxDate = ref(formatDate(new Date()));
+const minDate = ref((() => {
+  const date = new Date();
+  date.setDate(date.getDate() - 30);
+  return formatDate(date);
+})());
 
 // 切换价格类型弹出层
 function togglePriceTypePopup() {
@@ -276,42 +286,98 @@ function showDateRangePicker() {
 }
 
 // 确认日期范围选择
-function confirmDateRange(e: { startDate: string; endDate: string }) {
-  const start = new Date(e.startDate);
-  const end = new Date(e.endDate);
+function confirmDateRange(e: string[]) {
+  console.log('e', e);
+  const start = new Date(e[0]);
+  const end = new Date(e[e.length - 1]);
 
-  queryParams.value.create_begin = formatDate(start);
-  queryParams.value.create_end = formatDate(end);
+  // 检查日期范围是否超过30天
+  const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays > 30) {
+    uni.showToast({
+      title: '日期范围不能超过30天',
+      icon: 'none',
+    });
+    return;
+  }
+  console.log('start', start);
+  console.log('end', end);
 
-  startDate.value = queryParams.value.create_begin;
-  endDate.value = queryParams.value.create_end;
+  // 直接使用 formatDateForQuery 生成正确格式的日期字符串
+  const formattedStartDate = formatDateForQuery(start);
+  const formattedEndDate = formatDateForQuery(end);
+
+  // 更新查询参数
+  queryParams.value.create_begin = formattedStartDate;
+  queryParams.value.create_end = formattedEndDate;
+
+  // 保存日期值用于显示
+  startDate.value = formattedStartDate;
+  endDate.value = formattedEndDate;
 
   updateTimeDisplay();
   showDatePickerPopup.value = false;
+
+  // 重置分页并刷新列表
+  queryParams.value.current = 1;
   pagingRef.value?.reload();
+}
+
+// 修改 formatDateForQuery 函数确保返回正确格式
+function formatDateForQuery(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`; // 返回格式如: 20250101
 }
 
 // 取消日期选择
 function cancelDate() {
   showDatePickerPopup.value = false;
+  // 如果之前没有选择过日期，清空日期相关参数
+  if (!startDate.value || !endDate.value) {
+    queryParams.value.create_begin = undefined;
+    queryParams.value.create_end = undefined;
+    currentTime.value = '时间';
+  }
 }
 
-// 格式化日期
+// 修改格式化日期函数，使其返回 yyyy-MM-dd 格式
 function formatDate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
 
-  return `${year}${month}${day}`;
+  return `${year}-${month}-${day}`;
 }
 
-// 更新时间显示
+// 修改时间显示更新函数
 function updateTimeDisplay() {
   if (startDate.value && endDate.value) {
-    currentTime.value = `${startDate.value}-${endDate.value}`;
+    try {
+      // 确保日期字符串格式正确
+      const formatStart = startDate.value.replace(/\D/g, '');
+      const formatEnd = endDate.value.replace(/\D/g, '');
+
+      if (formatStart.length >= 8 && formatEnd.length >= 8) {
+        const start = `${formatStart.slice(4, 6)}-${formatStart.slice(6, 8)}`;
+        const end = `${formatEnd.slice(4, 6)}-${formatEnd.slice(6, 8)}`;
+        currentTime.value = `${start} 至 ${end}`;
+      }
+      else {
+        currentTime.value = '时间';
+      }
+    }
+    catch (error) {
+      console.error('日期格式化错误:', error);
+      currentTime.value = '时间';
+    }
   }
   else {
     currentTime.value = '时间';
+    // 清空查询参数中的日期
+    queryParams.value.create_begin = undefined;
+    queryParams.value.create_end = undefined;
   }
 }
 
@@ -368,13 +434,13 @@ function getStatusText(status: OrderStatus) {
 </script>
 
 <style scoped>
-.fixed-filter-bar {
+/* .fixed-filter-bar {
   position: fixed;
   top: 90rpx;
   right: 0;
   left: 0;
   z-index: 9;
-}
+} */
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
