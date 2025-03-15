@@ -8,6 +8,7 @@
         {{ title }}
       </text>
     </view>
+    <u-line v-if="!hasBackground" />
   </view>
 </template>
 

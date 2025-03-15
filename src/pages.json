@@ -12,29 +12,29 @@
       "path": "pages/tab/home/index",
       "style": {
         "navigationStyle": "custom"
-      }
-      // "needLogin": true
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/list/index",
       "style": {
         "navigationStyle": "custom"
-      }
-      // "needLogin": true
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/withdrawal/index",
       "style": {
         "navigationStyle": "custom"
-      }
-      // "needLogin": true
+      },
+      "needLogin": true
     },
     {
       "path": "pages/tab/user/index",
       "style": {
         "navigationStyle": "custom"
-      }
-      // "needLogin": true
+      },
+      "needLogin": true
     },
     {
       "path": "pages/order/detail/index",
@@ -112,8 +112,8 @@
       "pagePath": "pages/tab/list/index",
       "text": "历史订单"
     }, {
-      "iconPath": "static/images/tabbar/icon_list.png",
-      "selectedIconPath": "static/images/tabbar/icon_list_selected.png",
+      "iconPath": "static/images/tabbar/icon_withdrawal.png",
+      "selectedIconPath": "static/images/tabbar/icon_withdrawal_selected.png",
       "pagePath": "pages/tab/withdrawal/index",
       "text": "提币"
     }, {

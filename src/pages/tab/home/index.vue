@@ -1,6 +1,6 @@
 <template>
   <!-- 顶部导航和币种选择 -->
-  <c-header show-back has-background title="行情" class="fixed left-0 right-0 top-0 z-10" />
+  <c-header :show-back="false" has-background title="行情" class="fixed left-0 right-0 top-0 z-10" />
   <!-- container -->
   <c-container>
     <view
@@ -276,7 +276,6 @@
 </template>
 
 <script setup lang="ts">
-// import { LOGIN_PATH } from '@/router';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -285,8 +284,30 @@ import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
 import { useUserStore } from '@/store';
-// import { getToken, isLogin } from '@/utils';
+// import { LOGIN_PATH } from '@/router';
+import { getGoogleToken } from '@/utils';
+import WebSocketService from '@/utils/ws';
+// WebSocketService
 import { onBeforeUnmount, onMounted, ref } from 'vue';
+
+const token = getGoogleToken();
+console.log('token', token);
+const WSURL = import.meta.env.VITE_WS_URL;
+console.log('WSURL', WSURL);
+
+const wsService = new WebSocketService(`${WSURL}/wss?Authorization=${token}`);
+// 建立连接
+wsService.connect();
+
+// 监听消息
+wsService.onMessage((message) => {
+  console.log('收到服务端消息:', message);
+
+  // 判断消息类型
+  if (message.type === 'chat') {
+    console.log('聊天消息:', message.content);
+  }
+});
 
 const home_icon_list = ref([
   {

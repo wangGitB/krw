@@ -12,6 +12,7 @@
     refresher-refreshing-text="刷新中..."
     @query="queryList"
   >
+    <c-header title="历史订单" :show-back="false" />
     <!-- 顶部筛选栏 -->
     <view class="flex items-center border-b border-gray-100 bg-white p-30rpx">
       <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="togglePriceTypePopup">
@@ -88,15 +89,15 @@
         </view>
         <view
           class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
-          :class="item.type === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
+          :class="item.order_side === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
         >
-          {{ item.type === 'BUY' ? '买入' : '卖出' }}
+          {{ item.order_side === 'BUY' ? '买入' : '卖出' }}
         </view>
         <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
-          {{ item.orderType }}
+          {{ item.make_type === 'MARKET' ? '市价' : '限价' }}
         </view>
         <view class="ml-auto text-24rpx text-gray-500">
-          {{ item.time }}
+          {{ item.create_at }}
         </view>
       </view>
 
@@ -106,12 +107,12 @@
             {{ item.price }}
           </view>
           <view class="text-24rpx text-gray-500">
-            委托价格(USDT)
+            委托价格({{ item.fee_symboml }})
           </view>
         </view>
         <view class="flex flex-1 flex-col">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
-            {{ item.avgPrice }}
+            {{ item.avg_price }}
           </view>
           <view class="text-24rpx text-gray-500">
             成交均价
@@ -119,10 +120,10 @@
         </view>
         <view class="flex flex-1 flex-col">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
-            {{ item.amount }}
+            {{ item.deal_amount }}/{{ item.amount }}
           </view>
           <view class="text-24rpx text-gray-500">
-            成交/委托数量(HSK)
+            成交/委托数量
           </view>
         </view>
       </view>
@@ -131,12 +132,10 @@
         <view class="mr-30rpx text-24rpx text-gray-600">
           交易手续费: {{ item.fee }}
         </view>
-        <view class="text-24rpx text-gray-600">
-          手续费抵扣: {{ item.feeProfit }}
-        </view>
-        <view class="ml-auto flex items-center text-28rpx text-red-500">
-          {{ item.status }} <u-icon name="arrow-right" color="#ff0000" size="14" />
-        </view>
+        <!-- <view class="ml-auto flex items-center text-28rpx" :class="getStatusClass(item.status)">
+          {{ getStatusText(item.status) }}
+          <u-icon name="arrow-right" :color="getStatusColor(item.status)" size="14" />
+        </view> -->
       </view>
     </view>
 
@@ -151,6 +150,7 @@
 
 <script setup lang="ts">
 import type { OrderItem } from './types';
+import { getOrderList } from '@/api/list';
 import { ref } from 'vue';
 
 const pagingRef = ref<InstanceType<typeof zPaging> | null>(null);
@@ -164,6 +164,23 @@ const currentTime = ref('时间');
 const startDate = ref('');
 const endDate = ref('');
 
+// 修改查询参数的类型定义
+interface QueryParams {
+  order_side?: string;
+  make_type?: string;
+  create_begin?: string;
+  create_end?: string;
+  pageSize: number;
+  current: number;
+  status?: number;
+}
+
+const queryParams = ref<QueryParams>({
+  pageSize: 10,
+  current: 1,
+  status: 2, // 默认查询所有订单
+});
+
 // 切换价格类型弹出层
 function togglePriceTypePopup() {
   showPriceTypePopup.value = !showPriceTypePopup.value;
@@ -176,7 +193,7 @@ function togglePriceTypePopup() {
 function selectPriceType(type: string) {
   currentPriceType.value = `${type}委托`;
   showPriceTypePopup.value = false;
-  // 重新加载数据
+  queryParams.value.make_type = type === '市价' ? 'MARKET' : 'LIMIT';
   pagingRef.value?.reload();
 }
 
@@ -192,7 +209,7 @@ function toggleDirectionPopup() {
 function selectDirection(direction: string) {
   currentDirection.value = direction;
   showDirectionPopup.value = false;
-  // 重新加载数据
+  queryParams.value.order_side = direction === '买入' ? 'BUY' : 'SELL';
   pagingRef.value?.reload();
 }
 
@@ -205,18 +222,17 @@ function showDateRangePicker() {
 
 // 确认日期范围选择
 function confirmDateRange(e: { startDate: string; endDate: string }) {
-  // 格式化日期
   const start = new Date(e.startDate);
   const end = new Date(e.endDate);
 
-  startDate.value = formatDate(start);
-  endDate.value = formatDate(end);
+  queryParams.value.create_begin = formatDate(start);
+  queryParams.value.create_end = formatDate(end);
 
-  // 更新显示的时间范围
+  startDate.value = queryParams.value.create_begin;
+  endDate.value = queryParams.value.create_end;
+
   updateTimeDisplay();
   showDatePickerPopup.value = false;
-
-  // 重新加载数据
   pagingRef.value?.reload();
 }
 
@@ -244,86 +260,23 @@ function updateTimeDisplay() {
   }
 }
 
-// 模拟订单数据
-function getMockOrders(): OrderItem[] {
-  // 根据当前选择的方向和时间筛选数据
-  const allOrders: OrderItem[] = [
-    {
-      symbol: 'HSK/USDT',
-      type: 'SELL',
-      orderType: '限价',
-      time: '2025-02-28 16:26:22',
-      price: '0.7288',
-      avgPrice: '0.7288',
-      amount: '1.372.12/1.372.12',
-      fee: '1,000',
-      feeProfit: '1,000',
-      status: '完全成交',
-    },
-    {
-      symbol: 'HSK/USDT',
-      type: 'BUY',
-      orderType: '限价',
-      time: '2025-02-28 16:26:22',
-      price: '0.7288',
-      avgPrice: '0.7288',
-      amount: '1.372.12/1.372.12',
-      fee: '1,000',
-      feeProfit: '1,000',
-      status: '完全成交',
-    },
-    {
-      symbol: 'HSK/USDT',
-      type: 'SELL',
-      orderType: '限价',
-      time: '2025-02-28 16:26:22',
-      price: '0.7288',
-      avgPrice: '0.7288',
-      amount: '1.372.12/1.372.12',
-      fee: '1,000',
-      feeProfit: '1,000',
-      status: '完全成交',
-    },
-  ];
+async function queryList(pageNo: number, pageSize: number) {
+  queryParams.value.current = pageNo;
+  queryParams.value.pageSize = pageSize;
 
-  // 先按方向筛选
-  let filteredOrders = allOrders;
-  if (currentDirection.value !== '方向') {
-    const directionType = currentDirection.value === '买入' ? 'BUY' : 'SELL';
-    filteredOrders = allOrders.filter(order => order.type === directionType);
+  try {
+    const res = await getOrderList(queryParams.value);
+    if (res?.records) {
+      pagingRef.value?.complete(res.records);
+    }
+    else {
+      pagingRef.value?.complete([]);
+    }
   }
-
-  // 再按时间筛选
-  if (startDate.value || endDate.value) {
-    filteredOrders = filteredOrders.filter((order) => {
-      const orderDate = order.time.replace(/[- :]/g, '').substring(0, 8);
-
-      if (startDate.value && endDate.value) {
-        return orderDate >= startDate.value && orderDate <= endDate.value;
-      }
-      else if (startDate.value) {
-        return orderDate >= startDate.value;
-      }
-      else if (endDate.value) {
-        return orderDate <= endDate.value;
-      }
-
-      return true;
-    });
+  catch (error) {
+    console.error('获取订单列表失败:', error);
+    pagingRef.value?.complete(false);
   }
-
-  return filteredOrders;
-}
-
-function queryList(pageNo: number, pageSize: number) {
-  console.log('[ pageNo ] >', pageNo);
-  console.log('[ pageSize ] >', pageSize);
-
-  // 模拟网络请求
-  setTimeout(() => {
-    const mockData = getMockOrders();
-    pagingRef.value?.complete(mockData);
-  }, 1000);
 }
 
 function goToOrderDetail(item: OrderItem) {
@@ -334,10 +287,18 @@ function goToOrderDetail(item: OrderItem) {
   });
 }
 
-const language = uni.getSystemInfoSync().language;
-console.log('[ language ] >', language);
-</script>
+// function getStatusClass(status: string) {
+//   // Implement the logic to determine the class based on the status
+//   return '';
+// }
 
-<style lang="scss" scoped>
-/* 移除所有旧样式，使用UnoCSS原子类替代 */
-</style>
+// function getStatusText(status: string) {
+//   // Implement the logic to determine the text based on the status
+//   return status;
+// }
+
+// function getStatusColor(status: string) {
+//   // Implement the logic to determine the color based on the status
+//   return '#000';
+// }
+</script>

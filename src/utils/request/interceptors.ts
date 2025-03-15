@@ -5,7 +5,7 @@ import type {
   HttpResponse,
 } from 'uview-plus/libs/luch-request/index';
 // import { useUserStore } from '@/store';
-import { getToken } from '@/utils/auth';
+import { getGoogleToken, getToken } from '@/utils/auth';
 import storage from '@/utils/storage';
 import { showMessage } from './status';
 
@@ -82,10 +82,12 @@ function requestInterceptors(http: HttpRequestAbstract) {
 
       // 是否需要设置 token
       const isToken = custom?.auth === false;
-      if (getToken() && !isToken && config.header) {
+      if ((getToken() || getGoogleToken()) && !isToken && config.header) {
         // token设置 - 从local中获取admin-token并添加到headers的Authorization中
+        const googleToken = getGoogleToken();
         const token = getToken();
-        config.header.Authorization = `Bearer ${token}`;
+        const _token = googleToken || token;
+        config.header.Authorization = `Bearer ${_token}`;
       }
 
       // 是否显示 loading

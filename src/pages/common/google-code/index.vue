@@ -1,5 +1,5 @@
 <template>
-  <c-header show-back has-background title="谷歌验证码" class="fixed left-0 right-0 top-0 z-10" @back="handleBack" />
+  <c-header has-background show-back title="谷歌验证码" class="fixed left-0 right-0 top-0 z-10" @back="handleBack" />
   <c-container>
     <view
       class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
@@ -71,6 +71,7 @@
 <script lang="ts" setup>
 import { bindGoogleCode, getGoogleCode, verifyGoogleCode } from '@/api/user';
 import background_banner from '@/static/images/home/background_banner.png';
+import storage from '@/utils/storage';
 import { computed, onMounted, ref } from 'vue';
 
 const verificationCode = ref('');
@@ -119,13 +120,15 @@ onMounted(() => {
 
 const handleClick = async () => {
   // 校验google验证码并bind然后跳转home
-  await bindGoogleCode({
+  const res = await bindGoogleCode({
     code: verificationCode.value,
   });
   uni.showToast({
     title: '绑定成功',
     icon: 'success',
   });
+  storage.set('google_token', res.token);
+  storage.set('user_role', res.role);
   setTimeout(() => {
     uni.$u.route({
       type: 'switchTab',
@@ -140,9 +143,11 @@ const handleBack = () => {
 };
 const onConfirm = async () => {
   if (isCodeComplete.value) {
-    await verifyGoogleCode({
+    const res = await verifyGoogleCode({
       code: verificationCode.value,
     });
+    storage.set('google_token', res.token);
+    storage.set('user_role', res.role);
     uni.showToast({
       title: '验证成功',
       icon: 'success',
@@ -159,6 +164,7 @@ const onConfirm = async () => {
 
 <style lang="scss" scoped>
 .verification-code-input {
+/* stylelint-disable selector-class-pattern */
   :deep(.u-code-input__item) {
     height: 80rpx !important; // 减小输入框高度
     line-height: 80rpx !important; // 调整内部文字垂直居中
