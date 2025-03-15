@@ -1,6 +1,8 @@
 <template>
+  <c-header title="历史订单" :show-back="false" class="fixed left-0 right-0 top-0 z-10" />
   <z-paging
-    ref="pagingRef" v-model="dataList" fixed
+    ref="pagingRef" v-model="dataList"
+    :auto-height="true"
     language="zh-cn"
     empty-view-text="暂无数据"
     loading-more-no-more-text="没有更多数据了"
@@ -10,11 +12,11 @@
     refresher-default-text="下拉刷新"
     refresher-pulling-text="松开刷新"
     refresher-refreshing-text="刷新中..."
+    class="bg-white"
     @query="queryList"
   >
-    <c-header title="历史订单" :show-back="false" />
     <!-- 顶部筛选栏 -->
-    <view class="flex items-center border-b border-gray-100 bg-white p-30rpx">
+    <view class="fixed-filter-bar flex items-center border-b border-gray-100 bg-white p-30rpx">
       <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="togglePriceTypePopup">
         {{ currentPriceType }}
         <view class="ml-20rpx flex items-center">
@@ -41,30 +43,54 @@
       </view>
     </view>
 
+    <!-- 为筛选栏添加占位 -->
+    <view class="h-200rpx" />
+
     <!-- 价格类型选择弹出层 -->
-    <view v-if="showPriceTypePopup" class="absolute left-0 top-90rpx z-100 w-240rpx bg-white shadow-md">
-      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
-        市价
+    <u-popup
+      :show="showPriceTypePopup"
+      mode="top"
+      :mask="true"
+      :safe-area-inset-top="false"
+      :z-index="20"
+      @close="showPriceTypePopup = false"
+    >
+      <view class="mt-[88rpx] bg-white">
+        <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
+          市价
+        </view>
+        <view class="px-30rpx py-24rpx text-28rpx" @click="selectPriceType('限价')">
+          限价
+        </view>
       </view>
-      <view class="px-30rpx py-24rpx text-28rpx" @click="selectPriceType('限价')">
-        限价
-      </view>
-    </view>
+    </u-popup>
 
     <!-- 方向选择弹出层 -->
-    <view v-if="showDirectionPopup" class="absolute left-240rpx top-90rpx z-100 w-240rpx bg-white shadow-md">
-      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
-        买入
+    <u-popup
+      :show="showDirectionPopup"
+      mode="top"
+      :mask="true"
+      :safe-area-inset-top="false"
+      :z-index="20"
+      @close="showDirectionPopup = false"
+    >
+      <view class="mt-[88rpx] bg-white">
+        <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
+          买入
+        </view>
+        <view class="px-30rpx py-24rpx text-28rpx" @click="selectDirection('卖出')">
+          卖出
+        </view>
       </view>
-      <view class="px-30rpx py-24rpx text-28rpx" @click="selectDirection('卖出')">
-        卖出
-      </view>
-    </view>
+    </u-popup>
 
     <!-- 日期范围选择器 -->
     <u-calendar
       :show="showDatePickerPopup"
       mode="range"
+      :z-index="20"
+      :top="88"
+      :safe-area-inset-top="false"
       :month-num="12"
       :show-month="true"
       :show-subtitle="true"
@@ -72,6 +98,7 @@
       start-text="开始"
       end-text="结束"
       color="#2979ff"
+      :week-text="['日', '一', '二', '三', '四', '五', '六']"
       @confirm="confirmDateRange"
       @close="cancelDate"
     />
@@ -80,7 +107,7 @@
     <view
       v-for="(item, index) in dataList"
       :key="index"
-      class="m-20rpx overflow-hidden rounded-16rpx bg-white shadow-sm"
+      class="m-20rpx overflow-hidden rounded-16rpx bg-#f8f9fa shadow-sm"
       @click="goToOrderDetail(item)"
     >
       <view class="flex items-center border-b border-gray-50 p-24rpx">
@@ -88,12 +115,21 @@
           {{ item.symbol }}
         </view>
         <view
-          class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
-          :class="item.order_side === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
+          class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-size-24rpx"
+          :style="{
+            color: item.order_side === 'BUY' ? '#E6302F' : '#40AE36',
+            border: item.order_side === 'BUY' ? '1px solid #E6302F' : '1px solid #40AE36',
+          }"
         >
           {{ item.order_side === 'BUY' ? '买入' : '卖出' }}
         </view>
-        <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
+        <view
+          class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
+          :style="{
+            color: item.make_type === 'MARKET' ? '#E6302F' : '#F7B966',
+            border: item.make_type === 'MARKET' ? '1px solid #E6302F' : '1px solid #F7B966',
+          }"
+        >
           {{ item.make_type === 'MARKET' ? '市价' : '限价' }}
         </view>
         <view class="ml-auto text-24rpx text-gray-500">
@@ -102,15 +138,15 @@
       </view>
 
       <view class="flex border-b border-gray-50 p-30rpx">
-        <view class="flex flex-1 flex-col">
+        <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.price }}
           </view>
           <view class="text-24rpx text-gray-500">
-            委托价格({{ item.fee_symboml }})
+            委托价格 (USDT)
           </view>
         </view>
-        <view class="flex flex-1 flex-col">
+        <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.avg_price }}
           </view>
@@ -118,7 +154,7 @@
             成交均价
           </view>
         </view>
-        <view class="flex flex-1 flex-col">
+        <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx text-36rpx text-gray-800 font-bold">
             {{ item.deal_amount }}/{{ item.amount }}
           </view>
@@ -132,10 +168,15 @@
         <view class="mr-30rpx text-24rpx text-gray-600">
           交易手续费: {{ item.fee }}
         </view>
-        <!-- <view class="ml-auto flex items-center text-28rpx" :class="getStatusClass(item.status)">
+        <view class="mr-30rpx text-24rpx text-gray-600">
+          手续费利润: {{ item.fee_symboml }}
+        </view>
+        <view
+          class="ml-auto rounded-full px-16rpx py-4rpx text-24rpx"
+          :class="getStatusClass(item.status)"
+        >
           {{ getStatusText(item.status) }}
-          <u-icon name="arrow-right" :color="getStatusColor(item.status)" size="14" />
-        </view> -->
+        </view>
       </view>
     </view>
 
@@ -158,7 +199,7 @@ const dataList = ref<OrderItem[]>([]);
 const showPriceTypePopup = ref(false);
 const showDirectionPopup = ref(false);
 const showDatePickerPopup = ref(false);
-const currentPriceType = ref('市价委托');
+const currentPriceType = ref('市价 | 委托');
 const currentDirection = ref('方向');
 const currentTime = ref('时间');
 const startDate = ref('');
@@ -191,7 +232,7 @@ function togglePriceTypePopup() {
 
 // 选择价格类型
 function selectPriceType(type: string) {
-  currentPriceType.value = `${type}委托`;
+  currentPriceType.value = `${type} | 委托`;
   showPriceTypePopup.value = false;
   queryParams.value.make_type = type === '市价' ? 'MARKET' : 'LIMIT';
   pagingRef.value?.reload();
@@ -280,25 +321,41 @@ async function queryList(pageNo: number, pageSize: number) {
 }
 
 function goToOrderDetail(item: OrderItem) {
-  // 将订单数据转为字符串，通过 URL 参数传递
-  const orderData = encodeURIComponent(JSON.stringify(item));
   uni.navigateTo({
-    url: `/pages/order/detail/index?orderData=${orderData}`,
+    url: `/pages/order/detail/index?id=${item.id}`,
   });
 }
 
-// function getStatusClass(status: string) {
-//   // Implement the logic to determine the class based on the status
-//   return '';
-// }
+// 添加状态样式处理函数
+function getStatusClass(status: string) {
+  const statusMap: Record<string, string> = {
+    MAKE_ORDER: 'bg-blue-50 text-blue-600',
+    ORDER_ALL_CANCELED: 'bg-gray-50 text-gray-600',
+    ORDER_CANCELING: 'bg-yellow-50 text-yellow-600',
+    ORDER_COMPLETED: 'bg-green-50 text-green-600',
+    ORDER_FAILED: 'bg-red-50 text-red-600',
+  };
+  return statusMap[status] || 'bg-gray-50 text-gray-600';
+}
 
-// function getStatusText(status: string) {
-//   // Implement the logic to determine the text based on the status
-//   return status;
-// }
-
-// function getStatusColor(status: string) {
-//   // Implement the logic to determine the color based on the status
-//   return '#000';
-// }
+function getStatusText(status: string) {
+  const statusMap: Record<string, string> = {
+    MAKE_ORDER: '进行中',
+    ORDER_ALL_CANCELED: '已取消',
+    ORDER_CANCELING: '取消中',
+    ORDER_COMPLETED: '已完成',
+    ORDER_FAILED: '失败',
+  };
+  return statusMap[status] || status;
+}
 </script>
+
+<style scoped>
+.fixed-filter-bar {
+  position: fixed;
+  top: 90rpx;
+  right: 0;
+  left: 0;
+  z-index: 9;
+}
+</style>

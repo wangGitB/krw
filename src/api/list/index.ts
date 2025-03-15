@@ -57,3 +57,42 @@ interface OrderListRes {
 }
 /** 历史订单列表 */
 export const getOrderList = (params?: OrderListReq) => get<OrderListRes>('/order/list', { params });
+
+export interface OrderDetailReq {
+  current?: number;
+  order_id: number;
+  pageSize?: number;
+  [property: string]: any;
+}
+
+interface OrderDetailRes {
+  records: [
+    {
+      id: 0;
+      amount: 'string';
+      price: 'string';
+      create_at: 'string';
+      fee: 'string';
+      fee_symbol: 'string';
+      volume: 'string';
+      make_type: 'string';
+    },
+  ];
+  total: 0;
+  order_id: 'string';
+  amount: 'string';
+  deal_amount: 'string';
+  price: 'string';
+  avg_price: 'string';
+  create_at: 'string';
+  fee: 'string';
+  fee_symbol: 'string';
+  status: 'string';
+  symbol: 'string';
+  order_side: 'string';
+  make_type: 'string';
+  volume: 'string';
+  update_at: 'string';
+}
+
+export const getOrderDetail = (params?: OrderDetailReq) => get<OrderDetailRes>('/order/detail', { params });

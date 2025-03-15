@@ -23,15 +23,18 @@
       </view>
       <view
         class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
-        :class="orderDetail.type === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
+        :class="orderDetail.order_side === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
       >
-        {{ orderDetail.type === 'BUY' ? '买入' : '卖出' }}
+        {{ orderDetail.order_side === 'BUY' ? '买入' : '卖出' }}
       </view>
       <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
-        {{ orderDetail.orderType }}
+        {{ orderDetail.make_type === 'MARKET' ? '市价' : '限价' }}
       </view>
-      <view class="ml-auto rounded-8rpx bg-green-50 px-16rpx py-4rpx text-24rpx text-green-500">
-        全部完成
+      <view
+        class="ml-auto rounded-8rpx px-16rpx py-4rpx text-24rpx"
+        :class="getStatusClass(orderDetail.status)"
+      >
+        {{ getStatusText(orderDetail.status) }}
       </view>
     </view>
 
@@ -51,7 +54,7 @@
           成交均价(USDT)
         </view>
         <view class="text-36rpx font-bold">
-          {{ orderDetail.avgPrice }}
+          {{ orderDetail.avg_price }}
         </view>
       </view>
 
@@ -60,7 +63,7 @@
           委托数量(HSK)
         </view>
         <view class="text-36rpx font-bold">
-          {{ orderDetail.amount.split('/')[1] }}
+          {{ orderDetail.amount || '0' }}
         </view>
       </view>
 
@@ -69,7 +72,7 @@
           成交数量(HSK)
         </view>
         <view class="text-36rpx font-bold">
-          {{ orderDetail.amount.split('/')[0] }}
+          {{ orderDetail.deal_amount || '0' }}
         </view>
       </view>
 
@@ -85,11 +88,14 @@
       <!-- 进度条 -->
       <view class="py-20rpx">
         <view class="relative h-8rpx w-full overflow-hidden rounded-full bg-gray-200">
-          <view class="absolute left-0 top-0 h-full bg-red-500" :style="{ width: '98%' }" />
+          <view
+            class="absolute left-0 top-0 h-full bg-red-500"
+            :style="{ width: `${calculateProgress()}%` }"
+          />
         </view>
         <view class="mt-8rpx flex justify-end">
           <text class="text-24rpx text-red-500">
-            98%
+            {{ calculateProgress() }}%
           </text>
         </view>
       </view>
@@ -103,7 +109,7 @@
         </text>
         <view class="flex items-center">
           <text class="text-28rpx">
-            799175624317
+            {{ orderId }}
           </text>
           <view class="ml-10rpx" @click="copyOrderId">
             <u-icon name="file-copy" size="20" color="#999" />
@@ -116,7 +122,7 @@
           创建时间
         </text>
         <text class="text-28rpx">
-          {{ orderDetail.time }}
+          {{ orderDetail.create_at }}
         </text>
       </view>
 
@@ -125,7 +131,7 @@
           结束时间
         </text>
         <text class="text-28rpx">
-          {{ orderDetail.time }}
+          {{ orderDetail.update_at }}
         </text>
       </view>
 
@@ -143,7 +149,7 @@
           以点卡抵扣手续费
         </text>
         <text class="text-28rpx">
-          {{ orderDetail.feeProfit }}
+          {{ orderDetail.fee_symboml }}
         </text>
       </view>
     </view>
@@ -166,7 +172,7 @@
           </text>
         </view>
 
-        <view class="mb-20rpx flex items-center justify-between">
+        <!-- <view class="mb-20rpx flex items-center justify-between">
           <text class="text-28rpx text-gray-600">
             角色/订单ID
           </text>
@@ -176,7 +182,7 @@
             </text>
             <u-icon name="info-circle" size="16" color="#999" class="ml-10rpx" />
           </view>
-        </view>
+        </view> -->
 
         <view class="mb-20rpx flex items-center justify-between">
           <text class="text-28rpx text-gray-600">
@@ -219,51 +225,124 @@
 </template>
 
 <script setup lang="ts">
-import type { OrderItem } from '../../tab/list/types';
-import { onMounted, ref } from 'vue';
+import { getOrderDetail } from '@/api/list';
+import { onLoad } from '@dcloudio/uni-app';
+import { ref } from 'vue';
+
+interface OrderDetailInfo {
+  symbol: string;
+  order_side: 'BUY' | 'SELL';
+  make_type: 'MARKET' | 'LIMIT';
+  status: string;
+  price: string;
+  avg_price: string;
+  amount: string;
+  deal_amount: string;
+  create_at: string;
+  update_at: string;
+  fee: string;
+  fee_symboml: string;
+  volume: string;
+  id: number;
+}
+
+interface TradeRecord {
+  date: string;
+  price: string;
+  amount: string;
+  total: string;
+  fee: string;
+  fee_symbol: string;
+}
 
 // 获取路由参数
-const orderDetail = ref<OrderItem>({} as OrderItem);
-const tradeRecords = ref([
-  {
-    date: '2025-02-25 08:56:28',
-    role: 'Maker/1346090479',
-    price: '0.7288',
-    amount: '1,269.18',
-    total: '924.978384',
-    fee: '1.26918',
-  },
-  {
-    date: '2025-02-25 08:56:28',
-    role: 'Maker/1346090479',
-    price: '0.7288',
-    amount: '1,269.18',
-    total: '924.978384',
-    fee: '1.26918',
-  },
-]);
+const orderDetail = ref<OrderDetailInfo>({} as OrderDetailInfo);
+const tradeRecords = ref<TradeRecord[]>([]);
+const orderId = ref<number>(0);
 
-onMounted(() => {
-  // const eventChannel = getOpenerEventChannel();
-  const query = uni.getSystemInfoSync().platform === 'devtools'
-    ? { orderData: '' }
-    : uni.$u.route.query;
-
-  if (query && query.orderData) {
+onLoad((options) => {
+  console.log('options', options);
+  if (options?.id) {
     try {
-      orderDetail.value = JSON.parse(decodeURIComponent(query.orderData));
+      orderId.value = Number(options.id);
+      // 获取订单详情
+      fetchOrderDetail();
     }
     catch (e) {
-      console.error('解析订单数据失败', e);
+      console.error('获取订单ID失败:', e);
+      uni.showToast({
+        title: '获取订单ID失败',
+        icon: 'none',
+      });
     }
+  }
+  else {
+    uni.showToast({
+      title: '订单ID不存在',
+      icon: 'none',
+    });
+    setTimeout(() => {
+      uni.navigateBack();
+    }, 1500);
   }
 });
 
+// 获取订单详情
+async function fetchOrderDetail() {
+  try {
+    const res = await getOrderDetail({
+      order_id: orderId.value,
+      current: 1,
+      pageSize: 10,
+    });
+
+    if (res) {
+      // 设置订单基本信息
+      orderDetail.value = {
+        id: orderId.value,
+        symbol: res.symbol,
+        order_side: res.order_side as 'BUY' | 'SELL',
+        make_type: res.make_type as 'MARKET' | 'LIMIT',
+        status: res.status,
+        price: res.price,
+        avg_price: res.avg_price,
+        amount: res.amount,
+        deal_amount: res.deal_amount,
+        create_at: res.create_at,
+        update_at: res.update_at || res.create_at, // 如果没有更新时间则使用创建时间
+        fee: res.fee,
+        fee_symboml: res.fee_symbol,
+        volume: res.volume,
+      };
+
+      // 设置成交记录
+      if (res.records && Array.isArray(res.records)) {
+        tradeRecords.value = res.records.map(record => ({
+          date: record.create_at,
+          price: record.price,
+          amount: record.amount,
+          total: record.volume,
+          fee: record.fee,
+          fee_symbol: record.fee_symbol,
+        }));
+      }
+      else {
+        tradeRecords.value = [];
+      }
+    }
+  }
+  catch (error) {
+    console.error('获取订单详情失败:', error);
+    uni.showToast({
+      title: '获取订单详情失败',
+      icon: 'none',
+    });
+  }
+}
+
 // 计算成交总额
 function calculateTotal() {
-  const amount = Number.parseFloat(orderDetail.value.amount.split('/')[0].replace(/,/g, ''));
-  const price = Number.parseFloat(orderDetail.value.avgPrice);
-  return (amount * price).toFixed(6);
+  return orderDetail.value.volume || '0';
 }
 
 // 返回上一页
@@ -281,7 +360,7 @@ function goToTrade() {
 // 复制订单ID
 function copyOrderId() {
   uni.setClipboardData({
-    data: '799175624317',
+    data: orderId.value.toString(),
     success: () => {
       uni.showToast({
         title: '复制成功',
@@ -289,5 +368,38 @@ function copyOrderId() {
       });
     },
   });
+}
+
+// 获取订单状态样式
+function getStatusClass(status: string) {
+  const statusMap: Record<string, string> = {
+    MAKE_ORDER: 'bg-blue-50 text-blue-600',
+    ORDER_ALL_CANCELED: 'bg-gray-50 text-gray-600',
+    ORDER_CANCELING: 'bg-yellow-50 text-yellow-600',
+    ORDER_COMPLETED: 'bg-green-50 text-green-600',
+    ORDER_FAILED: 'bg-red-50 text-red-600',
+  };
+  return statusMap[status] || 'bg-gray-50 text-gray-600';
+}
+
+// 获取订单状态文本
+function getStatusText(status: string) {
+  const statusMap: Record<string, string> = {
+    MAKE_ORDER: '进行中',
+    ORDER_ALL_CANCELED: '已取消',
+    ORDER_CANCELING: '取消中',
+    ORDER_COMPLETED: '已完成',
+    ORDER_FAILED: '失败',
+  };
+  return statusMap[status] || status;
+}
+
+// 计算进度
+function calculateProgress() {
+  if (!orderDetail.value.amount || !orderDetail.value.deal_amount) return 0;
+  const total = Number(orderDetail.value.amount);
+  const dealt = Number(orderDetail.value.deal_amount);
+  if (total === 0) return 0;
+  return Math.round((dealt / total) * 100);
 }
 </script>
