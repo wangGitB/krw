@@ -1,112 +1,117 @@
 <template>
-  <view class="page-wrap">
-    <up-loading-page :loading="loading" />
-    <view v-if="!loading">
-      <u-navbar title="我的" placeholder left-icon="" />
-
-      <!-- 资产卡片 -->
-      <view class="asset-card mx-20rpx mt-20rpx p-30rpx">
-        <view class="flex items-center justify-between">
-          <view class="font-size-32rpx text-[#333] font-bold">
-            总资产估值
-          </view>
-          <view class="transaction-btn" @click="goToTransactionPassword">
-            交易密码
-          </view>
-        </view>
-
-        <view class="asset-value font-weight-Medium mt-10rpx flex font-size-64rpx">
-          {{ currencyAmount.total_value || '0.00' }} <view class="ml-20rpx flex items-end font-size-32rpx font-bold">
-            <view class="currency-selector" @click="chooseCurrency">
-              {{ selectedCurrency }} <up-icon class="up-icon" name="arrow-down-fill" color="#333333" size="24rpx" />
-            </view>
-          </view>
-        </view>
-
-        <view class="btc-value mt-10rpx font-size-24rpx text-[#999999]">
-          ≈{{ '0.00000000' }} BTC
-        </view>
-
-        <view class="mt-20rpx flex justify-between">
-          <view class="flex items-center font-size-24rpx">
-            <view class="flex text-[#333]">
-              提现手续费:<view class="ml-10rpx text-[#E6302F]">
-                {{ currencyAmount.withdraw_fee || '0' }}
-              </view>
-            </view>
-          </view>
-          <view class="flex items-center font-size-24rpx">
-            <view class="flex items-center text-[#333]">
-              交易手续费: <view class="ml-10rpx text-[#E6302F]">
-                {{ currencyAmount.trade_fee || '0' }}
-              </view>
-            </view>
-          </view>
-          <view class="modify-btn" @click="goToModifyPassword">
-            修改密码
-          </view>
-        </view>
-      </view>
-
-      <!-- 加密货币列表 -->
-      <view class="">
-        <view
-          v-for="(asset, index) in currencyAmount.assets" :key="asset.symbol"
-          class="crypto-item m-24rpx flex flex-col rounded-20rpx bg-white p-30rpx" :class="[index > 0 ? 'border-top' : '']"
-        >
+  <c-header :show-back="false" has-background title="我的" class="relative z-10" />
+  <view
+    class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
+    :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
+  />
+  <c-container>
+    <view class="page-wrap relative">
+      <up-loading-page :loading="loading" />
+      <view v-if="!loading">
+        <!-- 资产卡片 -->
+        <view class="asset-card mx-20rpx mt-20rpx p-30rpx">
           <view class="flex items-center justify-between">
-            <view class="flex items-center">
-              <image
-                v-if="asset.icon"
-                :src="asset.icon"
-                class="crypto-icon mr-20rpx"
-              />
-              <view
-                v-else
-                class="crypto-icon mr-20rpx"
-                :class="[getCryptoIconClass(asset.symbol)]"
-              >
-                {{ asset.symbol ? asset.symbol.charAt(0) : 'C' }}
-              </view>
-              <view class="font-weight-500 max-w-40 font-size-32rpx">
-                {{ asset.symbol }} <text class="ml-10rpx font-size-24rpx text-gray">
-                  {{ asset.symbol_name || '' }}
-                </text>
-              </view>
+            <view class="font-size-32rpx text-[#333] font-bold">
+              总资产估值
             </view>
-            <view class="font-weight-500 max-w-60 flex flex-wrap justify-end font-size-32rpx">
-              <view class="text-right">
-                {{ asset.amount || '0' }}
-              </view>
-              <view v-if="asset.amount_value && asset.amount_value !== '0'" class="w-full text-right font-size-24rpx text-gray">
-                ≈{{ asset.amount_value }} USD
+            <view class="transaction-btn" @click="goToTransactionPassword">
+              交易密码
+            </view>
+          </view>
+
+          <view class="asset-value font-weight-Medium mt-10rpx flex font-size-64rpx">
+            {{ currencyAmount.total_value || '0.00' }} <view class="ml-20rpx flex items-end font-size-32rpx font-bold">
+              <view class="currency-selector" @click="chooseCurrency">
+                {{ selectedCurrency }} <up-icon class="up-icon" name="arrow-down-fill" color="#333333" size="24rpx" />
               </view>
             </view>
           </view>
-          <view class="mt-10rpx flex justify-between">
-            <view class="font-size-24rpx text-gray">
-              {{ asset.price_type || '最新价' }}({{ selectedCurrency }})
-            </view>
-            <view class="mt-5rpx flex justify-between">
-              <view class="font-size-28rpx">
-                {{ asset.price || '--' }}
+
+          <view class="btc-value mt-10rpx font-size-24rpx text-[#999999]">
+            ≈{{ '0.00000000' }} BTC
+          </view>
+
+          <view class="mt-20rpx flex justify-between">
+            <view class="flex items-center font-size-24rpx">
+              <view class="flex text-[#333]">
+                提现手续费:<view class="ml-10rpx text-[#E6302F]">
+                  {{ currencyAmount.withdraw_fee || '0' }}
+                </view>
               </view>
+            </view>
+            <view class="flex items-center font-size-24rpx">
+              <view class="flex items-center text-[#333]">
+                交易手续费: <view class="ml-10rpx text-[#E6302F]">
+                  {{ currencyAmount.trade_fee || '0' }}
+                </view>
+              </view>
+            </view>
+            <view class="modify-btn" @click="goToModifyPassword">
+              修改密码
             </view>
           </view>
         </view>
 
-        <!-- 如果没有资产，显示空状态 -->
-        <view
-          v-if="!currencyAmount.assets || currencyAmount.assets.length === 0"
-          class="empty-state p-30rpx text-center"
-        >
-          <view class="font-size-28rpx text-gray">
-            暂无资产数据
+        <!-- 加密货币列表 -->
+        <view class="">
+          <view
+            v-for="(asset, index) in currencyAmount.assets" :key="asset.symbol"
+            class="crypto-item m-24rpx flex flex-col rounded-20rpx bg-white p-30rpx" :class="[index > 0 ? 'border-top' : '']"
+          >
+            <view class="flex items-center justify-between">
+              <view class="flex items-center">
+                <image
+                  v-if="asset.icon"
+                  :src="asset.icon"
+                  class="crypto-icon mr-20rpx"
+                />
+                <view
+                  v-else
+                  class="crypto-icon mr-20rpx"
+                  :class="[getCryptoIconClass(asset.symbol)]"
+                >
+                  {{ asset.symbol ? asset.symbol.charAt(0) : 'C' }}
+                </view>
+                <view class="font-weight-500 max-w-40 font-size-32rpx">
+                  {{ asset.symbol }} <text class="ml-10rpx font-size-24rpx text-gray">
+                    {{ asset.symbol_name || '' }}
+                  </text>
+                </view>
+              </view>
+              <view class="font-weight-500 max-w-60 flex flex-wrap justify-end font-size-32rpx">
+                <view class="text-right">
+                  {{ asset.amount || '0' }}
+                </view>
+                <view v-if="asset.amount_value && asset.amount_value !== '0'" class="w-full text-right font-size-24rpx text-gray">
+                  ≈{{ asset.amount_value }} USD
+                </view>
+              </view>
+            </view>
+            <view class="mt-10rpx flex justify-between">
+              <view class="font-size-24rpx text-gray">
+                {{ asset.price_type || '最新价' }}({{ selectedCurrency }})
+              </view>
+              <view class="mt-5rpx flex justify-between">
+                <view class="font-size-28rpx">
+                  {{ asset.price || '--' }}
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 如果没有资产，显示空状态 -->
+          <view
+            v-if="!currencyAmount.assets || currencyAmount.assets.length === 0"
+            class="empty-state p-30rpx text-center"
+          >
+            <view class="font-size-28rpx text-gray">
+              暂无资产数据
+            </view>
           </view>
         </view>
       </view>
     </view>
-  </view>
+  </c-container>
 
   <!-- 货币选择弹出层 -->
   <u-popup :show="showCurrencyPicker" mode="bottom" @close="showCurrencyPicker = false">
@@ -131,6 +136,7 @@
 import type { MySymbol, UserAssetData } from '@/api/my';
 import { getCurrency, getCurrencyAmount } from '@/api/my';
 import { usePermission } from '@/hooks';
+import background_banner from '@/static/images/home/background_banner.png';
 import { ref } from 'vue';
 // useClipboard,
 // const { setClipboardData, getClipboardData } = useClipboard();

@@ -1,6 +1,6 @@
 <template>
   <!-- 顶部导航和币种选择 -->
-  <c-header :show-back="false" has-background title="行情" class="fixed left-0 right-0 top-0 z-10" />
+  <c-header :show-back="false" has-background title="行情" class="relative z-10" />
   <!-- container -->
   <c-container>
     <view
