@@ -26,20 +26,26 @@
         </view>
       </view>
     </view>
-    <view class="mb-[58rpx] mt-[48rpx] flex items-center justify-between p-l-[28rpx] p-r-[18rpx]">
-      <view
-        v-for="(item, index) in home_icon_list" :key="index"
-        class="relative flex items-center gap-[14rpx] text-[32rpx] text-[#333]"
-      >
-        <img class="mr-[14rpx] h-[48rpx] w-[48rpx]" :src="item.icon" alt="" srcset="">
-        <text>{{ item.text }}</text>
+    <view class="relative z-10">
+      <view class="flex items-center justify-between overflow-hidden bg-white py-[28rpx] p-l-[28rpx] p-r-[18rpx]">
+        <view class="w-full flex items-center rounded-md bg-#F8F9FA p-x-[28rpx] p-y-[18rpx]">
+          <view
+            v-for="(item, index) in home_icon_list" :key="index"
+            class="relative w-full flex items-center gap-[14rpx] text-[32rpx] text-[#333]"
+          >
+            <img class="mr-[14rpx] h-[48rpx] w-[48rpx]" :src="item.icon" alt="" srcset="">
+            <text>{{ item.text }}</text>
+          </view>
+        </view>
       </view>
     </view>
+    <c-line />
     <!-- 买入和卖出 Button -->
-    <view class="mt-[40rpx] flex items-start justify-between">
+    <view class="flex items-start justify-between bg-white py-[30rpx]">
       <!-- 左侧内容 -->
-      <view class="h-[680rpx] w-[424rpx] flex flex-col px-[28rpx]">
-        <view class="flex">
+      <view class="h-[904rpx] w-[424rpx] flex flex-col px-[28rpx]">
+        <!-- 买入卖出按钮 -->
+        <view class="mb-[24rpx] flex">
           <u-button
             class="flex-1" :color="activeTab === 'buy' ? '#E53935' : '#FFE4E1'" text="买入"
             :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'buy' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
@@ -51,7 +57,9 @@
             @click="handleSell"
           />
         </view>
-        <view class="mt-[48rpx] w-[424rpx] flex items-center justify-between gap-[14rpx]">
+
+        <!-- 限单价 -->
+        <view class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <view class="relative flex items-center gap-[14rpx]">
             <image :src="home_icon4" class="h-[48rpx] w-[48rpx]" @tap.stop="toggleTooltip" />
             <!-- 添加 tooltip -->
@@ -73,7 +81,9 @@
           </view>
           <image :src="home_icon5" class="h-[22rpx] w-[34rpx]" />
         </view>
-        <view class="mt-[48rpx] flex items-center justify-between">
+
+        <!-- 买入价格 -->
+        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <text class="text-[24rpx] text-[#999999]">
             买入价格(USDT)
           </text>
@@ -81,7 +91,9 @@
             {{ buyPrice }}
           </text>
         </view>
-        <view class="mt-[48rpx] flex items-center justify-between">
+
+        <!-- 数量 -->
+        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <text class="text-[24rpx] text-[#999999]">
             数量
           </text>
@@ -91,15 +103,16 @@
         </view>
 
         <!-- 添加滑动条 -->
-        <view class="relative mt-[24rpx]">
+        <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <slider
             :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
             :active-color="activeTab === 'buy' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
             @change="handleSliderChange" @changing="handleSliderChanging"
           />
         </view>
+
         <!-- 交易额显示 -->
-        <view class="mt-[48rpx] flex items-center justify-between">
+        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <text class="text-[24rpx] text-[#999999]">
             交易额
           </text>
@@ -107,8 +120,9 @@
             USDT
           </text>
         </view>
+
         <!-- 可用余额 -->
-        <view class="mt-[24rpx] flex items-center justify-between">
+        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <view class="flex flex-1 items-center">
             <text class="text-[24rpx] text-[#999999]">
               可用
@@ -126,6 +140,7 @@
             </text>
           </view>
         </view>
+
         <!-- 买入按钮 -->
         <view class="mt-[40rpx]">
           <u-button
@@ -136,19 +151,20 @@
       </view>
 
       <!-- 右侧报价列表 -->
-      <view class="h-[680rpx] w-[280rpx] flex flex-col p-r-[20rpx]">
+      <view class="h-[904rpx] flex flex-1 flex-col p-l-[10rpx] p-r-[20rpx]">
         <!-- 标题栏 -->
-        <view class="flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
+        <view class="h-[64rpx] flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
           <text>价格<br> (USDT)</text>
           <text>数量 <br>(IP)</text>
         </view>
 
         <!-- 卖单列表 -->
         <view class="flex-1 overflow-y-auto">
+          <!-- 卖单容器 -->
           <view class="mt-[24rpx]">
             <view
               v-for="(item, index) in sellOrders" :key="index"
-              class="relative mb-[12rpx] flex items-center justify-between px-[12rpx]"
+              class="relative mb-[12rpx] h-[46rpx] flex items-center justify-between px-[12rpx]"
             >
               <!-- 修改卖单列表的背景样式 -->
               <view
@@ -166,7 +182,7 @@
           </view>
 
           <!-- 当前价格 -->
-          <view class="my-[12rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[8rpx]">
+          <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
             <view>
               <text
                 class="text-[28rpx] font-bold transition-colors duration-100" :class="{
@@ -186,10 +202,10 @@
           </view>
 
           <!-- 买单列表 -->
-          <view>
+          <view class="mb-[24rpx]">
             <view
               v-for="(item, index) in buyOrders" :key="index"
-              class="relative mb-[12rpx] flex items-center justify-between px-[12rpx]"
+              class="relative mb-[12rpx] h-[56rpx] flex items-center justify-between px-[12rpx]"
             >
               <!-- 添加背景色柱状图 -->
               <view
@@ -209,67 +225,71 @@
       </view>
     </view>
     <!-- 委托 -->
-    <view class="mt-[40rpx] px-[28rpx]">
-      <view class="flex items-center justify-between">
-        <view class="flex items-center gap-[12rpx]">
-          <text class="text-[32rpx] text-[#333] font-bold">
-            IP/USDT
-          </text>
-          <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-            <text class="text-[24rpx] text-[#E6302F]">
-              买入
-            </text>
+    <view class="mt-[40rpx] h-1156rpx overflow-auto bg-white p-x-[28rpx] p-b-[28rpx]">
+      <view v-for="item in 3" :key="item" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
+        <view class="px-[28rpx]">
+          <view class="flex items-center justify-between">
+            <view class="flex items-center gap-[12rpx]">
+              <text class="text-[32rpx] text-[#333] font-bold">
+                IP/USDT
+              </text>
+              <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                <text class="text-[24rpx] text-[#E6302F]">
+                  买入
+                </text>
+              </view>
+              <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                <text class="text-[24rpx] text-[#F7B966]">
+                  限价
+                </text>
+              </view>
+            </view>
+            <view class="text-[28rpx] text-[#999] font-500">
+              2025-02-28 16:26:22
+            </view>
           </view>
-          <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-            <text class="text-[24rpx] text-[#F7B966]">
-              限价
-            </text>
+        </view>
+        <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+          <view class="flex flex-col items-center justify-center">
+            <view class="text-[44rpx] text-[#333] font-bold">
+              0.46988
+            </view>
+            <view class="text-[24rpx] text-[#666]">
+              委托价格(USDT)
+            </view>
+          </view>
+
+          <view class="flex flex-col items-center justify-center">
+            <view class="text-[44rpx] text-[#333] font-bold">
+              3
+            </view>
+            <view class="text-[24rpx] text-[#666]">
+              委托数量(IP)
+            </view>
+          </view>
+          <view class="flex flex-col items-center justify-center">
+            <view class="text-[44rpx] text-[#333] font-bold">
+              1.40964
+            </view>
+            <view class="text-[24rpx] text-[#666]">
+              交易额(USDT)
+            </view>
           </view>
         </view>
-        <view class="text-[28rpx] text-[#999] font-500">
-          2025-02-28 16:26:22
-        </view>
-      </view>
-    </view>
-    <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-      <view class="flex flex-col items-center justify-center">
-        <view class="text-[44rpx] text-[#333] font-bold">
-          0.46988
-        </view>
-        <view class="text-[24rpx] text-[#666]">
-          委托价格(USDT)
-        </view>
-      </view>
 
-      <view class="flex flex-col items-center justify-center">
-        <view class="text-[44rpx] text-[#333] font-bold">
-          3
+        <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+          <view class="flex flex-col items-center justify-center">
+            <view class="text-[44rpx] text-[#E6302F] font-bold">
+              2
+            </view>
+            <view class="text-[24rpx] text-[#999]">
+              已成交(IP)
+            </view>
+          </view>
+          <view class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold">
+            撤销
+          </view>
         </view>
-        <view class="text-[24rpx] text-[#666]">
-          委托数量(IP)
-        </view>
-      </view>
-      <view class="flex flex-col items-center justify-center">
-        <view class="text-[44rpx] text-[#333] font-bold">
-          1.40964
-        </view>
-        <view class="text-[24rpx] text-[#666]">
-          交易额(USDT)
-        </view>
-      </view>
-    </view>
-
-    <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-      <view class="flex flex-col items-center justify-center">
-        <view class="text-[44rpx] text-[#E6302F] font-bold">
-          2
-        </view>
-        <view class="text-[24rpx] text-[#999]">
-          已成交(IP)
-        </view>
-      </view>
-      <view class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold">
-        撤销
       </view>
     </view>
   </c-container>

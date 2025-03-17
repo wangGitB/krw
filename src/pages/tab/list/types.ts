@@ -23,4 +23,5 @@ export interface OrderItem {
   volume: string; // 源币的成交额
   fee: string; // 手续费
   fee_symboml: string; // 手续费币种
+  agent_fee: string; // 代理手续费
 }

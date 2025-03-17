@@ -162,7 +162,7 @@
         <!-- TODO: 手续费利润 -->
         <view class="no-scrollbar w-[35%] overflow-x-auto text-center text-24rpx text-gray-600">
           <text class="whitespace-nowrap">
-            手续费利润: {{ item.volume ? formatNumber(item.volume) : '0.00' }}
+            手续费利润: {{ item.agent_fee ? formatNumber(item.volume) : '0.00' }}
           </text>
         </view>
         <view class="w-[30%] text-right">

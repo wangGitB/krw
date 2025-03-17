@@ -13,7 +13,7 @@
         </text>
       </view>
     </view>
-    <view v-if="!hasBackground" class="line" />
+    <c-line v-if="!hasBackground" />
   </view>
 </template>
 
@@ -42,13 +42,9 @@ const handleBack = () => {
 </script>
 
 <style scoped>
-.line {
+/* .line {
   width: 100%;
   margin: 0;
   border-bottom: 1px solid rgb(214 215 217);
-
-  /* border-top-color: rgb(214, 215, 217);
-  border-right-color: rgb(214, 215, 217);
-  border-left-color: rgb(214, 215, 217); */
-}
+} */
 </style>
