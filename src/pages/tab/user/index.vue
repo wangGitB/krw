@@ -27,9 +27,9 @@
             </view>
           </view>
 
-          <view class="btc-value mt-10rpx font-size-24rpx text-[#999999]">
+          <!-- <view class="btc-value mt-10rpx font-size-24rpx text-[#999999]">
             ≈{{ '0.00000000' }} BTC
-          </view>
+          </view> -->
 
           <view class="mt-20rpx flex justify-between">
             <view class="flex items-center font-size-24rpx">

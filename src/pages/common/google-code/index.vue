@@ -1,5 +1,5 @@
 <template>
-  <c-header has-background show-back title="谷歌验证码" class="fixed left-0 right-0 top-0 z-10" @back="handleBack" />
+  <c-header show-back has-background title="谷歌验证码" class="fixed left-0 right-0 top-0 z-10" @back="handleBack" />
   <c-container>
     <view
       class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
@@ -166,8 +166,8 @@ const onConfirm = async () => {
 .verification-code-input {
 /* stylelint-disable selector-class-pattern */
   :deep(.u-code-input__item) {
-    height: 80rpx !important; // 减小输入框高度
-    line-height: 80rpx !important; // 调整内部文字垂直居中
+    // height: 80rpx !important; // 减小输入框高度
+    // line-height: 80rpx !important; // 调整内部文字垂直居中
     background-color: #F8F9FA !important; // 添加背景色
     border: none !important; // 移除边框
   }

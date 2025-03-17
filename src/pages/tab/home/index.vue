@@ -69,8 +69,7 @@
             <view
               v-if="showTooltip"
               class="absolute bottom-[60rpx] left-0 z-10 w-[300rpx] rounded-[8rpx] bg-[#2C2C2C] p-[20rpx] shadow-lg transition-all duration-300 ease-in-out"
-              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']"
-              @tap.stop
+              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop
             >
               <text class="text-[24rpx] text-[#E6E6E6]">
                 {{ makeType === 'LIMIT' ? '限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。' : '市价委托是指以当前市场最优价格立即成交的委托方式。' }}
@@ -134,7 +133,7 @@
 
         <!-- 交易额显示 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="w-80rpx text-[24rpx] text-[#999999]">
+          <text class="w-85rpx text-[24rpx] text-[#999999]">
             交易额
           </text>
           <text class="text-end text-[32rpx] text-[#333333] font-bold">
@@ -199,9 +198,7 @@
           <!-- 当前价格 -->
           <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
             <view>
-              <text
-                class="text-[28rpx] font-bold transition-colors duration-100"
-              >
+              <text class="text-[28rpx] font-bold transition-colors duration-100">
                 {{ currentPrice }}
               </text>
             </view>
@@ -333,10 +330,7 @@
 
     <!-- 委托类型选择弹出层 -->
     <u-popup
-      :show="showMakeTypePopup"
-      mode="bottom"
-      :mask="true"
-      :safe-area-inset-bottom="true"
+      :show="showMakeTypePopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" :round="10"
       @close="showMakeTypePopup = false"
     >
       <view class="bg-white p-[30rpx]">
@@ -361,10 +355,7 @@
             </view>
             <u-icon v-if="makeType === 'LIMIT'" name="checkmark-circle" color="#07c160" size="32" />
           </view>
-          <view
-            class="flex items-center justify-between py-[24rpx]"
-            @click="selectMakeType('MARKET')"
-          >
+          <view class="flex items-center justify-between py-[24rpx]" @click="selectMakeType('MARKET')">
             <view class="flex items-center">
               <text class="text-[28rpx]">
                 市价委托
@@ -381,71 +372,117 @@
 
     <!-- 下单确认弹出层 -->
     <u-popup
-      :show="showOrderConfirm"
-      mode="center"
-      :mask="true"
-      :safe-area-inset-bottom="true"
+      :show="showOrderConfirm" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
       @close="showOrderConfirm = false"
     >
-      <view class="w-[600rpx] rounded-[10rpx] bg-white">
-        <view class="flex items-center justify-between border-b border-gray-100 p-[30rpx]">
-          <text class="text-[32rpx] font-bold">
+      <view class="flex items-center justify-between border-b border-[#f5f5f5] p-[28rpx]">
+        <view class="flex-1" /> <!-- 左侧空白占位 -->
+        <view class="flex-1 text-center">
+          <text class="text-[32rpx] text-[#333] font-bold">
             下单确认
           </text>
-          <u-icon name="close" size="32" @click="showOrderConfirm = false" />
         </view>
-        <view class="p-[30rpx]">
-          <view class="mb-[20rpx] flex items-center justify-between">
-            <text class="text-[28rpx] text-[#666]">
-              交易对
-            </text>
-            <text class="text-[28rpx] text-[#333] font-bold">
-              IP/USDT
-            </text>
-          </view>
-          <view class="mb-[20rpx] flex items-center justify-between">
-            <text class="text-[28rpx] text-[#666]">
-              委托类型
-            </text>
-            <text class="text-[28rpx] text-[#333] font-bold">
-              {{ makeType === 'LIMIT' ? '限价委托' : '市价委托' }}
-            </text>
-          </view>
-          <view class="mb-[20rpx] flex items-center justify-between">
-            <text class="text-[28rpx] text-[#666]">
-              {{ activeTab === 'BUY' ? '买入' : '卖出' }}价格
-            </text>
-            <text class="text-[28rpx] text-[#333] font-bold">
-              {{ buyOrSellPrice }} USDT
-            </text>
-          </view>
-          <view class="mb-[20rpx] flex items-center justify-between">
-            <text class="text-[28rpx] text-[#666]">
-              数量
-            </text>
-            <text class="text-[28rpx] text-[#333] font-bold">
-              {{ tradeAmount }} IP
-            </text>
-          </view>
-          <view class="mb-[20rpx] flex items-center justify-between">
-            <text class="text-[28rpx] text-[#666]">
-              交易额
-            </text>
-            <text class="text-[28rpx] text-[#333] font-bold">
-              {{ totalAmount }} USDT
-            </text>
-          </view>
+        <view class="flex flex-1 justify-end">
+          <u-icon name="close" size="30rpx" @click="showOrderConfirm = false" />
         </view>
-        <view class="flex border-t border-gray-100">
+      </view>
+      <view class="p-[28rpx]">
+        <view class="mb-[20rpx] flex items-center">
+          <text class="text-[28rpx] text-[#333]">
+            {{ selectedSymbol }}
+          </text>
           <view
-            class="flex-1 border-r border-gray-100 py-[24rpx] text-center text-[#999]"
-            @click="showOrderConfirm = false"
+            class="ml-22rpx rounded-sm p-x-[8rpx] text-[24rpx]"
+            :style="{ color: activeTab === 'BUY' ? '#E6302F' : '#00B069', border: activeTab === 'BUY' ? '1rpx solid #E6302F' : '1rpx solid #00B069' }"
           >
-            取消
+            {{ activeTab === 'BUY' ? '买入' : '卖出' }}
           </view>
+        </view>
+        <view class="mb-[20rpx] flex items-center justify-between">
+          <text class="h-28rpx text-[28rpx] text-[#999] line-height-28rpx">
+            委托类型
+          </text>
+          <text class="text-[28rpx] text-[#333]">
+            {{ makeType === 'LIMIT' ? '限价' : '市价' }}
+          </text>
+        </view>
+        <view class="mb-[20rpx] flex items-center justify-between">
+          <text class="text-[28rpx] text-[#999]">
+            {{ activeTab === 'BUY' ? '买入' : '卖出' }}价格
+          </text>
+          <text class="text-[28rpx] text-[#333]">
+            {{ buyOrSellPrice }} USDT
+          </text>
+        </view>
+        <view class="mb-[20rpx] flex items-center justify-between">
+          <text class="text-[28rpx] text-[#999]">
+            买入量
+          </text>
+          <text class="text-[28rpx] text-[#333]">
+            {{ tradeAmount }} IP
+          </text>
+        </view>
+        <view class="mb-[20rpx] flex items-center justify-between">
+          <text class="text-[28rpx] text-[#999]">
+            交易额
+          </text>
+          <text class="text-[28rpx] text-[#333]">
+            {{ totalAmount }} USDT
+          </text>
+        </view>
+      </view>
+      <view class="h-[90rpx] p-x-[28rpx] p-y-[20rpx]">
+        <view
+          class="h-full flex items-center justify-center rounded-full text-[30rpx] text-white"
+          :style="{ background: activeTab === 'BUY' ? '#E6302F' : '#00B069' }"
+          @click="submitOrder"
+        >
+          确认
+        </view>
+      </view>
+    </u-popup>
+
+    <!-- 修改密码输入弹窗，使用 u-code-input 组件 -->
+    <u-popup
+      :show="showPasswordPopup"
+      mode="bottom"
+      :mask="true"
+      :safe-area-inset-bottom="true"
+      round="20"
+      @close="showPasswordPopup = false"
+    >
+      <view class="p-[28rpx]">
+        <view class="flex items-center justify-between border-b border-[#f5f5f5] p-b-[20rpx]">
+          <view class="flex-1" />
+          <view class="flex-1 text-center">
+            <text class="text-[32rpx] text-[#333] font-bold">
+              输入交易密码
+            </text>
+          </view>
+          <view class="flex flex-1 justify-end">
+            <u-icon name="close" size="30rpx" @click="showPasswordPopup = false" />
+          </view>
+        </view>
+
+        <view class="code-container mt-[40rpx] w-full flex justify-center">
+          <!-- 使用 u-code-input 组件 -->
+          <u-code-input
+            v-model="tradePassword"
+            :maxlength="6"
+            :dot="false"
+            mode="box"
+            :space="10"
+            font-size="24px"
+            class="verification-code-input mb-[20rpx] w-full"
+            :size="boxSize"
+            @finish="handleConfirmPassword"
+          />
+        </view>
+
+        <view class="mt-[40rpx]">
           <view
-            class="flex-1 py-[24rpx] text-center text-[#E53935]"
-            @click="submitOrder"
+            class="h-[88rpx] flex items-center justify-center rounded-[8rpx] bg-[#E6302F] text-[32rpx] text-white"
+            @click="handleConfirmPassword"
           >
             确认
           </view>
@@ -536,6 +573,8 @@ const updateTradeInfo = () => {
 // 买入按钮点击事件
 const handleBuy = () => {
   activeTab.value = 'BUY';
+  // 重置滑块和交易数量
+  sliderValue.value = 0;
   // 切换到买入时更新价格和交易信息
   if (buyOrders.value.length > 0) {
     buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
@@ -546,6 +585,8 @@ const handleBuy = () => {
 // 卖出按钮点击事件
 const handleSell = () => {
   activeTab.value = 'SELL';
+  // 重置滑块和交易数量
+  sliderValue.value = 0;
   // 切换到卖出时更新价格和交易信息
   if (sellOrders.value.length > 0) {
     buyOrSellPrice.value = sellOrders.value[0].price;
@@ -720,6 +761,8 @@ const initData = async () => {
   await fetchSymbolList();
   await fetchSymbolSetting();
 };
+// 添加验证码输入框大小计算
+const boxSize = ref(0);
 // 页面加载时获取交易对列表
 onMounted(async () => {
   // 添加全局点击事件监听
@@ -731,9 +774,6 @@ onMounted(async () => {
 
   // 初始化数据
   await initData();
-  console.log('selectedExchangeId.value', selectedExchangeId.value);
-  console.log('selectedSymbolId.value', selectedSymbolId.value);
-  console.log('selectedSourceId.value', selectedSourceId.value);
   if (selectedExchangeId.value && selectedSymbolId.value && selectedSourceId.value) {
     // 订阅价格变化
     wsService.subscribe('P', selectedExchangeId.value, selectedSymbolId.value, selectedSourceId.value);
@@ -798,7 +838,11 @@ const handleOrder = () => {
   showOrderConfirm.value = true;
 };
 
-// 提交订单
+// 添加新的响应式变量
+const showPasswordPopup = ref(false);
+const tradePassword = ref('');
+
+// 修改 submitOrder 函数
 const submitOrder = async () => {
   try {
     uni.showLoading({
@@ -814,13 +858,16 @@ const submitOrder = async () => {
       sourceId: selectedSourceId.value!,
       symbol_id: selectedSymbolId.value!,
       t: Date.now(),
+      sign: '',
     };
 
     // 调用下单接口
     await newOrder(orderData);
 
-    // 关闭确认弹窗
+    // 关闭密码弹窗和确认弹窗
+    showPasswordPopup.value = false;
     showOrderConfirm.value = false;
+    tradePassword.value = ''; // 清空密码
 
     // 显示成功提示
     uni.showToast({
@@ -836,7 +883,76 @@ const submitOrder = async () => {
     await fetchSymbolSetting();
   }
   catch (error: any) {
-    // 显示错误提示
+    if (error.code === 3000) {
+      // 显示密码输入弹窗，同时隐藏确认弹窗
+      showPasswordPopup.value = true;
+      showOrderConfirm.value = false;
+      nextTick(() => {
+        const query = uni.createSelectorQuery();
+        query.select('.code-container').boundingClientRect((data) => {
+          if (data && typeof data === 'object' && 'width' in data) {
+            // 计算每个输入框的大小 (总宽度减去间距) / 输入框数量
+            const containerWidth = data.width as number;
+            const totalSpacing = 10 * 5; // 5个间隔 (6个输入框之间)
+            boxSize.value = Math.floor((containerWidth - totalSpacing) / 6);
+          }
+        }).exec();
+      });
+    }
+    else {
+      uni.showToast({
+        title: error.message || '下单失败',
+        icon: 'none',
+      });
+    }
+  }
+  finally {
+    uni.hideLoading();
+  }
+};
+
+// 添加确认密码的处理函数
+const handleConfirmPassword = async () => {
+  try {
+    uni.showLoading({
+      title: '提交中...',
+    });
+
+    // 准备请求参数
+    const orderData = {
+      amount: tradeAmount.value,
+      make_type: makeType.value,
+      order_side: activeTab.value,
+      price: buyOrSellPrice.value,
+      sourceId: selectedSourceId.value!,
+      symbol_id: selectedSymbolId.value!,
+      t: Date.now(),
+      sign: '',
+      trade_password: tradePassword.value, // 添加交易密码
+    };
+
+    // 调用下单接口
+    await newOrder(orderData);
+
+    // 关闭密码弹窗和确认弹窗
+    showPasswordPopup.value = false;
+    showOrderConfirm.value = false;
+    tradePassword.value = ''; // 清空密码
+
+    // 显示成功提示
+    uni.showToast({
+      title: '下单成功',
+      icon: 'success',
+    });
+
+    // 重置交易数量
+    sliderValue.value = 0;
+    updateTradeInfo();
+
+    // 刷新交易对设置
+    await fetchSymbolSetting();
+  }
+  catch (error: any) {
     uni.showToast({
       title: error.message || '下单失败',
       icon: 'none',
@@ -848,7 +964,7 @@ const submitOrder = async () => {
 };
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .slider-custom {
   margin: 0;
 }
@@ -864,5 +980,15 @@ const submitOrder = async () => {
 /* 添加价格变化动画 */
 .transition-colors {
   transition: color 0.1s ease-in-out;
+}
+
+.verification-code-input {
+/* stylelint-disable selector-class-pattern */
+  :deep(.u-code-input__item) {
+    // height: 80rpx !important; // 减小输入框高度
+    // line-height: 80rpx !important; // 调整内部文字垂直居中
+    background-color: #F8F9FA !important; // 添加背景色
+    border: none !important; // 移除边框
+  }
 }
 </style>

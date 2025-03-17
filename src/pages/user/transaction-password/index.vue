@@ -1,361 +1,219 @@
 <template>
-  <view class="page-wrap">
-    <u-navbar title="设置交易密码" left-icon="arrow-left" @left-click="goBack" />
-
-    <view class="form-container">
-      <view class="switch-item">
-        <view class="switch-label">
+  <c-header title="交易密码" class="relative z-10" @back="handleBack" />
+  <c-container class="h-[calc(100vh-190rpx)] bg-white">
+    <view class="px-30rpx py-20rpx">
+      <view class="mb-24rpx flex items-center justify-between rounded-md bg-#f8f9fa p-24rpx">
+        <text class="text-28rpx text-gray-800">
           是否开启交易密码
-        </view>
-        <u-switch v-model="isEnabled" active-color="#4cd964" />
+        </text>
+        <up-switch v-model="isEnabled" size="20" active-color="#5ac725" />
       </view>
-
-      <view v-if="isEnabled">
-        <view class="password-container">
-          <view class="password-label">
-            旧密码
-          </view>
-          <view class="password-input-group">
-            <view
-              v-for="(item, index) in 6"
-              :key="index"
-              class="password-input"
-              :class="{ active: oldPassword.length > index }"
-            >
-              <text v-if="oldPassword.length > index">
-                •
-              </text>
-            </view>
-          </view>
-        </view>
-
-        <view class="password-container">
-          <view class="password-label">
-            新密码
-          </view>
-          <view class="password-input-group">
-            <view
-              v-for="(item, index) in 6"
-              :key="index"
-              class="password-input"
-              :class="{ active: newPassword.length > index }"
-            >
-              <text v-if="newPassword.length > index">
-                •
-              </text>
-            </view>
-          </view>
-        </view>
-
-        <view class="password-container">
-          <view class="password-label">
-            重复新密码
-          </view>
-          <view class="password-input-group">
-            <view
-              v-for="(item, index) in 6"
-              :key="index"
-              class="password-input"
-              :class="{ active: confirmPassword.length > index }"
-            >
-              <text v-if="confirmPassword.length > index">
-                •
-              </text>
-            </view>
-          </view>
-        </view>
-
-        <view class="password-container">
-          <view class="password-label">
-            验证码
-          </view>
-          <view class="password-input-group">
-            <view
-              v-for="(item, index) in 6"
-              :key="index"
-              class="password-input"
-              :class="{ active: verifyCode.length > index }"
-            >
-              <text v-if="verifyCode.length > index">
-                •
-              </text>
-            </view>
-          </view>
+      <c-line />
+      <view class="flex items-center justify-between py-30rpx">
+        <text class="text-28rpx text-gray-800">
+          旧密码
+        </text>
+        <view class="code-container w-70%" @click="focusInput('old')">
+          <u-code-input
+            v-model="oldPassword"
+            :maxlength="6"
+            :size="boxSize"
+            mode="box"
+            hairline
+            :space="10"
+            @change="codeChange"
+          />
         </view>
       </view>
 
-      <button class="submit-btn" @click="handleSubmit">
+      <view class="flex items-center justify-between py-30rpx">
+        <text class="text-28rpx text-gray-800">
+          新密码
+        </text>
+        <view class="code-container w-70%" @click="focusInput('new')">
+          <u-code-input
+            v-model="newPassword"
+            :maxlength="6"
+            :size="boxSize"
+            mode="box"
+            hairline
+            :space="10"
+            @change="codeChange"
+          />
+        </view>
+      </view>
+
+      <view class="flex items-center justify-between py-30rpx">
+        <text class="text-28rpx text-gray-800">
+          重复新密码
+        </text>
+        <view class="code-container w-70%" @click="focusInput('confirm')">
+          <u-code-input
+            v-model="confirmPassword"
+            :maxlength="6"
+            :size="boxSize"
+            mode="box"
+            hairline
+            :space="10"
+            @change="codeChange"
+          />
+        </view>
+      </view>
+
+      <view class="flex items-center justify-between py-30rpx">
+        <text class="text-28rpx text-gray-800">
+          验证码
+        </text>
+        <view class="code-container w-70%" @click="focusInput('verification')">
+          <u-code-input
+            v-model="verificationCode"
+            :maxlength="6"
+            :size="boxSize"
+            mode="box"
+            hairline
+            :space="10"
+            @change="codeChange"
+          />
+        </view>
+      </view>
+
+      <button class="mt-60rpx h-80rpx w-full rounded-40rpx bg-[#e63946] text-30rpx text-white leading-80rpx" @click="handleConfirm">
         确认
       </button>
     </view>
-
-    <!-- 数字键盘 -->
-    <view v-if="showKeyboard" class="keyboard">
-      <view class="keyboard-row">
-        <view class="keyboard-key" @click="inputNumber('1')">
-          1
-        </view>
-        <view class="keyboard-key" @click="inputNumber('2')">
-          2
-        </view>
-        <view class="keyboard-key" @click="inputNumber('3')">
-          3
-        </view>
-      </view>
-      <view class="keyboard-row">
-        <view class="keyboard-key" @click="inputNumber('4')">
-          4
-        </view>
-        <view class="keyboard-key" @click="inputNumber('5')">
-          5
-        </view>
-        <view class="keyboard-key" @click="inputNumber('6')">
-          6
-        </view>
-      </view>
-      <view class="keyboard-row">
-        <view class="keyboard-key" @click="inputNumber('7')">
-          7
-        </view>
-        <view class="keyboard-key" @click="inputNumber('8')">
-          8
-        </view>
-        <view class="keyboard-key" @click="inputNumber('9')">
-          9
-        </view>
-      </view>
-      <view class="keyboard-row">
-        <view class="keyboard-key empty" />
-        <view class="keyboard-key" @click="inputNumber('0')">
-          0
-        </view>
-        <view class="keyboard-key" @click="deleteNumber">
-          <u-icon name="backspace" size="40" />
-        </view>
-      </view>
-    </view>
-  </view>
+  </c-container>
 </template>
 
-<script setup lang="ts">
-import { ref, watch } from 'vue';
+<script lang="ts" setup>
+import { resetTradePwd } from '@/api/my';
+import { onMounted, ref } from 'vue';
 
 const isEnabled = ref(true);
 const oldPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
-const verifyCode = ref('');
-const currentInput = ref('oldPassword');
-const showKeyboard = ref(true);
+const verificationCode = ref('');
+const boxSize = ref(0);
+const currentFocus = ref('');
 
-const goBack = () => {
-  uni.navigateBack();
+const calculateBoxSize = () => {
+  setTimeout(() => {
+    const query = uni.createSelectorQuery();
+    query.selectAll('.code-container').boundingClientRect((data) => {
+      if (data && Array.isArray(data) && data.length > 0 && data[0] && typeof data[0].width === 'number') {
+        const containerWidth = data[0].width;
+        const totalSpacing = 10 * 5;
+        boxSize.value = Math.floor((containerWidth - totalSpacing) / 6);
+      }
+    }).exec();
+  }, 100);
 };
 
-const inputNumber = (num: string) => {
-  if (currentInput.value === 'oldPassword' && oldPassword.value.length < 6) {
-    oldPassword.value += num;
-    if (oldPassword.value.length === 6) {
-      currentInput.value = 'newPassword';
-    }
-  }
-  else if (currentInput.value === 'newPassword' && newPassword.value.length < 6) {
-    newPassword.value += num;
-    if (newPassword.value.length === 6) {
-      currentInput.value = 'confirmPassword';
-    }
-  }
-  else if (currentInput.value === 'confirmPassword' && confirmPassword.value.length < 6) {
-    confirmPassword.value += num;
-    if (confirmPassword.value.length === 6) {
-      currentInput.value = 'verifyCode';
-    }
-  }
-  else if (currentInput.value === 'verifyCode' && verifyCode.value.length < 6) {
-    verifyCode.value += num;
-  }
+onMounted(() => {
+  calculateBoxSize();
+});
+
+const handleBack = () => {
+  setTimeout(() => {
+    uni.$u.route({
+      type: 'switchTab',
+      url: '/pages/tab/user/index',
+    });
+  }, 800);
 };
 
-const deleteNumber = () => {
-  if (currentInput.value === 'oldPassword' && oldPassword.value.length > 0) {
-    oldPassword.value = oldPassword.value.slice(0, -1);
-  }
-  else if (currentInput.value === 'newPassword' && newPassword.value.length > 0) {
-    newPassword.value = newPassword.value.slice(0, -1);
-  }
-  else if (currentInput.value === 'confirmPassword' && confirmPassword.value.length > 0) {
-    confirmPassword.value = confirmPassword.value.slice(0, -1);
-  }
-  else if (currentInput.value === 'verifyCode' && verifyCode.value.length > 0) {
-    verifyCode.value = verifyCode.value.slice(0, -1);
-  }
-  else if (currentInput.value === 'newPassword' && newPassword.value.length === 0) {
-    currentInput.value = 'oldPassword';
-  }
-  else if (currentInput.value === 'confirmPassword' && confirmPassword.value.length === 0) {
-    currentInput.value = 'newPassword';
-  }
-  else if (currentInput.value === 'verifyCode' && verifyCode.value.length === 0) {
-    currentInput.value = 'confirmPassword';
-  }
+const focusInput = (type: string) => {
+  currentFocus.value = type;
 };
 
-const handleSubmit = () => {
+const codeChange = () => {
+  // 处理验证码输入变化
+};
+
+const handleConfirm = () => {
+  // 验证输入
   if (!isEnabled.value) {
-    uni.showToast({ title: '已关闭交易密码', icon: 'success' });
+    // 处理关闭交易密码的逻辑
+    uni.showToast({
+      title: '已关闭交易密码',
+      icon: 'none',
+    });
     return;
   }
 
-  // 表单验证
-  if (oldPassword.value.length !== 6) {
-    uni.showToast({ title: '请输入6位旧密码', icon: 'none' });
+  if (!oldPassword.value || oldPassword.value.length < 6) {
+    uni.showToast({
+      title: '请输入完整的旧密码',
+      icon: 'none',
+    });
     return;
   }
 
-  if (newPassword.value.length !== 6) {
-    uni.showToast({ title: '请输入6位新密码', icon: 'none' });
-    return;
-  }
-
-  if (confirmPassword.value.length !== 6) {
-    uni.showToast({ title: '请再次输入6位新密码', icon: 'none' });
+  if (!newPassword.value || newPassword.value.length < 6) {
+    uni.showToast({
+      title: '请输入完整的新密码',
+      icon: 'none',
+    });
     return;
   }
 
   if (newPassword.value !== confirmPassword.value) {
-    uni.showToast({ title: '两次输入的新密码不一致', icon: 'none' });
+    uni.showToast({
+      title: '两次输入的密码不一致',
+      icon: 'none',
+    });
     return;
   }
 
-  if (verifyCode.value.length !== 6) {
-    uni.showToast({ title: '请输入6位验证码', icon: 'none' });
+  if (!verificationCode.value || verificationCode.value.length < 6) {
+    uni.showToast({
+      title: '请输入完整的验证码',
+      icon: 'none',
+    });
     return;
   }
 
-  // 提交设置交易密码请求
-  uni.showLoading({ title: '提交中...' });
+  // 提交表单
+  uni.showLoading({
+    title: '提交中',
+  });
 
-  // 模拟请求
-  setTimeout(() => {
-    uni.hideLoading();
-    uni.showToast({ title: '交易密码设置成功', icon: 'success' });
-
-    // 返回上一页
-    setTimeout(() => {
-      uni.navigateBack();
-    }, 1500);
-  }, 1000);
+  // 调用API接口
+  resetTradePwd({
+    old_pwd: oldPassword.value,
+    new_pwd: newPassword.value,
+    google_code: verificationCode.value,
+    status: isEnabled.value,
+  })
+    .then(() => {
+      uni.hideLoading();
+      uni.showToast({
+        title: '设置成功',
+        icon: 'success',
+      });
+      // 成功后返回上一页
+      setTimeout(() => {
+        uni.navigateBack();
+      }, 1500);
+    })
+    .catch((err) => {
+      uni.hideLoading();
+      uni.showToast({
+        title: err.message || '设置失败，请重试',
+        icon: 'none',
+      });
+    });
 };
-
-// 监听开关状态
-watch(isEnabled, (newVal) => {
-  if (!newVal) {
-    oldPassword.value = '';
-    newPassword.value = '';
-    confirmPassword.value = '';
-    verifyCode.value = '';
-    currentInput.value = 'oldPassword';
-  }
-});
 </script>
 
 <style lang="scss" scoped>
-.page-wrap {
-  min-height: 100vh;
-  padding-bottom: 300rpx;
-  background-color: #f5f5f5;
-}
-
-.form-container {
-  padding: 0 30rpx;
-}
-
-.switch-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
-  background-color: #fff;
-  border-radius: 8rpx;
-}
-
-.switch-label {
-  font-size: 28rpx;
-  color: #333;
-}
-
-.password-container {
-  margin-bottom: 20rpx;
-}
-
-.password-label {
-  margin-bottom: 20rpx;
-  font-size: 28rpx;
-  color: #333;
-}
-
-.password-input-group {
-  display: flex;
-  justify-content: space-between;
-}
-
-.password-input {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80rpx;
-  height: 80rpx;
-  font-size: 40rpx;
-  background-color: #fff;
-  border: 1px solid #eee;
-}
-
-.password-input.active {
-  border-color: #ddd;
-}
-
-.submit-btn {
-  height: 90rpx;
-  margin-top: 60rpx;
-  font-size: 32rpx;
-  line-height: 90rpx;
-  color: #fff;
-  background-color: #e54d42;
-  border-radius: 45rpx;
-}
-
-.keyboard {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 999;
-  width: 100%;
-  padding: 20rpx 0;
-  background-color: #f7f7f7;
-}
-
-.keyboard-row {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20rpx;
-}
-
-.keyboard-key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 220rpx;
-  height: 100rpx;
-  font-size: 36rpx;
-  font-weight: bold;
-  background-color: #fff;
-  border-radius: 8rpx;
-  box-shadow: 0 2rpx 4rpx rgb(0 0 0 / 10%);
-}
-
-.keyboard-key.empty {
-  background-color: transparent;
-  box-shadow: none;
+.code-container {
+/* stylelint-disable selector-class-pattern */
+:deep(.u-code-input__item) {
+    // height: 80rpx !important; // 减小输入框高度
+    // line-height: 80rpx !important; // 调整内部文字垂直居中
+    background-color: #F8F9FA !important; // 添加背景色
+    border: none !important; // 移除边框
+  }
 }
 </style>

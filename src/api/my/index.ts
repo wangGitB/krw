@@ -1,14 +1,4 @@
-import { get } from '@/utils/request';
-
-// /**
-//  * MySymbolsResp
-//  */
-// export interface MySymbolsResp {
-//   code: number;
-//   data: MySymbol[];
-//   msg: string;
-//   [property: string]: any;
-// }
+import { get, post } from '@/utils/request';
 
 /**
  * MySymbol
@@ -85,3 +75,29 @@ export interface UserAssetItem {
 
 // 获取当前选择币种的货币数量以及对应币种数据
 export const getCurrencyAmount = (params?: Request) => get<UserAssetData>('/user/asset', { params });
+
+/**
+ * 重置交易密码
+ */
+
+export interface ResetTradePwdReq {
+  /**
+   * google验证码
+   */
+  google_code: string;
+  /**
+   * 新交易密码
+   */
+  new_pwd: string;
+  /**
+   * 旧交易密码
+   */
+  old_pwd?: string;
+  /**
+   * 是否开启交易密码
+   */
+  status: boolean;
+
+}
+
+export const resetTradePwd = (data: ResetTradePwdReq) => post('/user/reset_trade_pwd', { data });
