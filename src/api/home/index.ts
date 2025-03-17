@@ -1,4 +1,4 @@
-import { get } from '@/utils/request';
+import { get, post } from '@/utils/request';
 
 export interface SymbolInfosRes {
   target_id: number;
@@ -71,3 +71,46 @@ export interface SymbolSettingRes {
 }
 
 export const getSymbolSetting = (params: SymbolSettingReq) => get<SymbolSettingRes>('/symbol/setting', { params });
+
+/**
+ * NewOrderReq
+ */
+export interface NewOrderReq {
+  /**
+   * 挂单量
+   */
+  amount: string;
+  /**
+   * 委托类型。LIMIT 限价委托，MARKET 市价委托
+   */
+  make_type: string;
+  /**
+   * 买卖方向。BUY 买单，SELL 卖单
+   */
+  order_side: string;
+  /**
+   * 市价的时候可以不传 建议还是都传
+   */
+  price?: string;
+  /**
+   * 源币ID
+   */
+  sourceId: number;
+  /**
+   * 目标币ID
+   */
+  symbol_id: number;
+  /**
+   * 时间戳
+   */
+  t: number;
+}
+
+export interface NewOrderRes {
+  /**
+   * 订单ID
+   */
+  order_id: string;
+}
+
+export const newOrder = (data: NewOrderReq) => post<NewOrderRes>('/order/new', { data });

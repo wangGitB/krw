@@ -43,7 +43,7 @@
     <!-- 买入和卖出 Button -->
     <view class="flex items-start justify-between bg-white py-[30rpx]">
       <!-- 左侧内容 -->
-      <view class="h-[904rpx] w-[424rpx] flex flex-col px-[28rpx]">
+      <view class="w-[424rpx] flex flex-col px-[28rpx]">
         <!-- 买入卖出按钮 -->
         <view class="mb-[24rpx] flex">
           <u-button
@@ -101,8 +101,8 @@
           <text class="text-[24rpx] text-[#999999]">
             数量
           </text>
-          <text class="text-[24rpx] text-[#999999]">
-            IP
+          <text class="text-[32rpx] text-[#333333] font-bold">
+            {{ tradeAmount }} IP
           </text>
         </view>
 
@@ -113,15 +113,32 @@
             :active-color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
             @change="handleSliderChange" @changing="handleSliderChanging"
           />
+          <view class="mt-[10rpx] flex items-center justify-between">
+            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(0)">
+              0%
+            </text>
+            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(25)">
+              25%
+            </text>
+            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(50)">
+              50%
+            </text>
+            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(75)">
+              75%
+            </text>
+            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(100)">
+              100%
+            </text>
+          </view>
         </view>
 
         <!-- 交易额显示 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
+          <text class="w-80rpx text-[24rpx] text-[#999999]">
             交易额
           </text>
-          <text class="text-[24rpx] text-[#999999]">
-            USDT
+          <text class="text-end text-[32rpx] text-[#333333] font-bold">
+            {{ totalAmount }} USDT
           </text>
         </view>
 
@@ -132,16 +149,14 @@
               可用
             </text>
             <text class="ml-[8rpx] text-[24rpx] text-[#333333]">
-              {{ source_amount }} USDT
+              {{ source_amount_display }} USDT
             </text>
           </view>
           <view
             class="h-[34rpx] w-[34rpx] flex items-center justify-center rounded-[4rpx] bg-[#FAE4E6]"
             @tap="handleAdd"
           >
-            <text class="text-[24rpx] text-[#E53935]">
-              +
-            </text>
+            <u-icon name="plus" color="#E53935" size="20rpx" />
           </view>
         </view>
 
@@ -150,6 +165,7 @@
           <u-button
             :text="activeTab === 'BUY' ? '买入 IP' : '卖出 IP'" :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
             :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
+            @click="handleOrder"
           />
         </view>
       </view>
@@ -170,11 +186,6 @@
               v-for="(item, index) in sellOrders" :key="index"
               class="relative mb-[12rpx] h-[46rpx] flex items-center justify-between px-[12rpx]"
             >
-              <!-- 修改卖单列表的背景样式 -->
-              <!-- <view
-                class="absolute bottom-0 right-[12rpx] top-0 bg-[#FFE4E1] transition-all duration-300"
-                :style="{ width: `${(Number(item.amount.replace('K', '000')) / 1500) * 100}%` }"
-              /> -->
               <!-- 内容保持在最上层 -->
               <text class="relative z-1 text-[24rpx] text-[#E53935]">
                 {{ item.price }}
@@ -193,11 +204,6 @@
               >
                 {{ currentPrice }}
               </text>
-              <!-- <view class="mt-[4rpx]">
-                <text class="text-[20rpx] text-[#999]">
-                  ≈ ¥{{ (currentPrice * 7.23).toFixed(4) }}
-                </text>
-              </view> -->
             </view>
           </view>
 
@@ -207,11 +213,6 @@
               v-for="(item, index) in buyOrders" :key="index"
               class="relative mb-[12rpx] h-[56rpx] flex items-center justify-between px-[12rpx]"
             >
-              <!-- 添加背景色柱状图 -->
-              <!-- <view
-                class="absolute bottom-0 right-0 top-0 bg-[#E8F5E9] transition-all duration-300"
-                :style="{ width: `${(Number(item.amount.replace('K', '000')) / 1500) * 100}%` }"
-              /> -->
               <!-- 内容保持在最上层 -->
               <text class="relative z-1 text-[24rpx] text-[#00B069]">
                 {{ item.price }}
@@ -377,12 +378,86 @@
         </view>
       </view>
     </u-popup>
+
+    <!-- 下单确认弹出层 -->
+    <u-popup
+      :show="showOrderConfirm"
+      mode="center"
+      :mask="true"
+      :safe-area-inset-bottom="true"
+      @close="showOrderConfirm = false"
+    >
+      <view class="w-[600rpx] rounded-[10rpx] bg-white">
+        <view class="flex items-center justify-between border-b border-gray-100 p-[30rpx]">
+          <text class="text-[32rpx] font-bold">
+            下单确认
+          </text>
+          <u-icon name="close" size="32" @click="showOrderConfirm = false" />
+        </view>
+        <view class="p-[30rpx]">
+          <view class="mb-[20rpx] flex items-center justify-between">
+            <text class="text-[28rpx] text-[#666]">
+              交易对
+            </text>
+            <text class="text-[28rpx] text-[#333] font-bold">
+              IP/USDT
+            </text>
+          </view>
+          <view class="mb-[20rpx] flex items-center justify-between">
+            <text class="text-[28rpx] text-[#666]">
+              委托类型
+            </text>
+            <text class="text-[28rpx] text-[#333] font-bold">
+              {{ makeType === 'LIMIT' ? '限价委托' : '市价委托' }}
+            </text>
+          </view>
+          <view class="mb-[20rpx] flex items-center justify-between">
+            <text class="text-[28rpx] text-[#666]">
+              {{ activeTab === 'BUY' ? '买入' : '卖出' }}价格
+            </text>
+            <text class="text-[28rpx] text-[#333] font-bold">
+              {{ buyOrSellPrice }} USDT
+            </text>
+          </view>
+          <view class="mb-[20rpx] flex items-center justify-between">
+            <text class="text-[28rpx] text-[#666]">
+              数量
+            </text>
+            <text class="text-[28rpx] text-[#333] font-bold">
+              {{ tradeAmount }} IP
+            </text>
+          </view>
+          <view class="mb-[20rpx] flex items-center justify-between">
+            <text class="text-[28rpx] text-[#666]">
+              交易额
+            </text>
+            <text class="text-[28rpx] text-[#333] font-bold">
+              {{ totalAmount }} USDT
+            </text>
+          </view>
+        </view>
+        <view class="flex border-t border-gray-100">
+          <view
+            class="flex-1 border-r border-gray-100 py-[24rpx] text-center text-[#999]"
+            @click="showOrderConfirm = false"
+          >
+            取消
+          </view>
+          <view
+            class="flex-1 py-[24rpx] text-center text-[#E53935]"
+            @click="submitOrder"
+          >
+            确认
+          </view>
+        </view>
+      </view>
+    </u-popup>
   </c-container>
 </template>
 
 <script setup lang="ts">
 import type { SymbolInfosRes } from '@/api/home';
-import { getSymbolInfos, getSymbolSetting } from '@/api/home';
+import { getSymbolInfos, getSymbolSetting, newOrder } from '@/api/home';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -399,16 +474,83 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 const currentPrice = ref(0);
 // 源币数量
 const source_amount = ref('');
+const source_amount_display = ref('');
 // 当前激活的标签页（买入/卖出）
 const activeTab = ref('BUY'); // 默认选中买入
+
+// 买入或卖出价格
+const buyOrSellPrice = ref('');
+
+// 交易数量
+const tradeAmount = ref('0');
+// 交易总额
+const totalAmount = ref('0');
+
+// 卖单数据
+const sellOrders = ref<{ price: string; amount: string }[]>([]);
+
+// 买单数据
+const buyOrders = ref<{ price: string; amount: string }[]>([]);
+
+// 滑动条相关变量
+const minValue = ref(0);
+const maxValue = ref(100);
+const sliderValue = ref(0);
+
+// 计算最大可交易数量
+const calculateMaxTradeAmount = () => {
+  if (!buyOrSellPrice.value || Number.parseFloat(buyOrSellPrice.value) <= 0) {
+    return 0;
+  }
+  // 获取可用余额
+  const availableBalance = Number.parseFloat(source_amount.value || '0');
+  // 根据买入/卖出计算最大可交易数量
+  if (activeTab.value === 'BUY') {
+    // 买入时，最大数量 = 可用余额 / 买入价格
+    return availableBalance / Number.parseFloat(buyOrSellPrice.value);
+  }
+  else {
+    // 卖出时，直接使用可用余额（假设这里的可用余额是IP数量）
+    return availableBalance;
+  }
+};
+
+// 更新交易数量和总额
+const updateTradeInfo = () => {
+  const maxAmount = calculateMaxTradeAmount();
+  // 根据滑块百分比计算实际交易数量
+  const percentage = sliderValue.value / 100;
+  const amount = maxAmount * percentage;
+  // 更新交易数量显示，保留6位小数
+  tradeAmount.value = amount.toFixed(6);
+  // 计算交易总额
+  if (buyOrSellPrice.value) {
+    const total = amount * Number.parseFloat(buyOrSellPrice.value);
+    totalAmount.value = total.toFixed(2);
+  }
+  else {
+    totalAmount.value = '0';
+  }
+};
+
 // 买入按钮点击事件
 const handleBuy = () => {
   activeTab.value = 'BUY';
+  // 切换到买入时更新价格和交易信息
+  if (buyOrders.value.length > 0) {
+    buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
+  }
+  updateTradeInfo();
 };
 
 // 卖出按钮点击事件
 const handleSell = () => {
   activeTab.value = 'SELL';
+  // 切换到卖出时更新价格和交易信息
+  if (sellOrders.value.length > 0) {
+    buyOrSellPrice.value = sellOrders.value[0].price;
+  }
+  updateTradeInfo();
 };
 
 // 添加 tooltip 控制变量
@@ -425,31 +567,26 @@ const toggleTooltip = (e: Event) => {
   showTooltip.value = !showTooltip.value;
 };
 
-// 买入或卖出价格
-const buyOrSellPrice = ref('');
-
-// 滑动条相关变量
-const minValue = ref(0);
-const maxValue = ref(10);
-const sliderValue = ref(5.46988);
-
 // 滑动条改变事件
 const handleSliderChange = (e: any) => {
   sliderValue.value = e.detail.value;
+  updateTradeInfo();
 };
 
 const handleSliderChanging = (e: any) => {
   sliderValue.value = e.detail.value;
+  updateTradeInfo();
+};
+
+// 快速选择百分比
+const selectPercentage = (percentage: number) => {
+  sliderValue.value = percentage;
+  updateTradeInfo();
 };
 
 const handleAdd = () => {
-  console.log('点击添加');
+  // 可以添加充值或其他操作
 };
-// 卖单数据
-const sellOrders = ref<{ price: string; amount: string }[]>([]);
-
-// 买单数据
-const buyOrders = ref<{ price: string; amount: string }[]>([]);
 
 const token = getGoogleToken();
 const WSURL = import.meta.env.VITE_WS_URL;
@@ -476,8 +613,6 @@ const home_icon_list = ref([
 
 // 监听消息
 wsService.onMessage((message) => {
-  console.log('收到服务端消息:', message);
-
   // 处理价格行情数据
   if (message.T === 'B') {
     // 更新行情数据 - BP(买入价格)、TP(卖出价格)、TM(24小时最高价)
@@ -515,6 +650,9 @@ wsService.onMessage((message) => {
       else if (activeTab.value === 'SELL') {
         buyOrSellPrice.value = sellOrders.value[0].price;
       }
+
+      // 价格变化时更新交易信息
+      updateTradeInfo();
     }
   }
   if (message.T === 'D') {
@@ -554,7 +692,6 @@ const handleCurrency = () => {
 const fetchSymbolList = async (): Promise<void> => {
   try {
     const res = await getSymbolInfos();
-    console.log('交易对列表:', res);
     symbolList.value = res || [];
     // 如果有数据，默认选中第一个
     if (symbolList.value.length > 0) {
@@ -574,15 +711,17 @@ const fetchSymbolList = async (): Promise<void> => {
 // 获取交易对设置
 const fetchSymbolSetting = async (): Promise<void> => {
   const res = await getSymbolSetting({ symbol_id: selectedSymbolId.value!, source_id: selectedSourceId.value!, exchange_id: selectedExchangeId.value! });
-  console.log('交易对设置:', res);
-  source_amount.value = res.source_amount_display;
+  source_amount.value = res.source_amount;
+  source_amount_display.value = res.source_amount_display;
+  // 更新交易信息
+  updateTradeInfo();
 };
 const initData = async () => {
   await fetchSymbolList();
   await fetchSymbolSetting();
 };
 // 页面加载时获取交易对列表
-onMounted(() => {
+onMounted(async () => {
   // 添加全局点击事件监听
   document.addEventListener('click', () => {
     if (showTooltip.value) {
@@ -591,7 +730,10 @@ onMounted(() => {
   });
 
   // 初始化数据
-  initData();
+  await initData();
+  console.log('selectedExchangeId.value', selectedExchangeId.value);
+  console.log('selectedSymbolId.value', selectedSymbolId.value);
+  console.log('selectedSourceId.value', selectedSourceId.value);
   if (selectedExchangeId.value && selectedSymbolId.value && selectedSourceId.value) {
     // 订阅价格变化
     wsService.subscribe('P', selectedExchangeId.value, selectedSymbolId.value, selectedSourceId.value);
@@ -627,6 +769,82 @@ const showMakeTypePopup = ref(false);
 const selectMakeType = (type: 'LIMIT' | 'MARKET') => {
   makeType.value = type;
   showMakeTypePopup.value = false;
+};
+
+// 下单确认相关
+const showOrderConfirm = ref(false);
+
+// 处理下单按钮点击
+const handleOrder = () => {
+  // 检查交易数量是否为0
+  if (Number(tradeAmount.value) <= 0) {
+    uni.showToast({
+      title: '请输入交易数量',
+      icon: 'none',
+    });
+    return;
+  }
+
+  // 检查价格是否有效
+  if (makeType.value === 'LIMIT' && (!buyOrSellPrice.value || Number(buyOrSellPrice.value) <= 0)) {
+    uni.showToast({
+      title: '请输入有效价格',
+      icon: 'none',
+    });
+    return;
+  }
+
+  // 显示确认弹窗
+  showOrderConfirm.value = true;
+};
+
+// 提交订单
+const submitOrder = async () => {
+  try {
+    uni.showLoading({
+      title: '提交中...',
+    });
+
+    // 准备请求参数
+    const orderData = {
+      amount: tradeAmount.value,
+      make_type: makeType.value,
+      order_side: activeTab.value,
+      price: buyOrSellPrice.value,
+      sourceId: selectedSourceId.value!,
+      symbol_id: selectedSymbolId.value!,
+      t: Date.now(),
+    };
+
+    // 调用下单接口
+    await newOrder(orderData);
+
+    // 关闭确认弹窗
+    showOrderConfirm.value = false;
+
+    // 显示成功提示
+    uni.showToast({
+      title: '下单成功',
+      icon: 'success',
+    });
+
+    // 重置交易数量
+    sliderValue.value = 0;
+    updateTradeInfo();
+
+    // 刷新交易对设置
+    await fetchSymbolSetting();
+  }
+  catch (error: any) {
+    // 显示错误提示
+    uni.showToast({
+      title: error.message || '下单失败',
+      icon: 'none',
+    });
+  }
+  finally {
+    uni.hideLoading();
+  }
 };
 </script>
 

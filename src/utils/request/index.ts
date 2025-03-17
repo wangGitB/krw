@@ -32,7 +32,6 @@ export function request<T = any>(config: HttpRequestConfig): Promise<T> {
   return new Promise((resolve, reject) => {
     http.request(config).then((res: HttpResponse<IResponse<T>>) => {
       console.log('[ res ] >', res);
-      console.log('res.data', res.data);
 
       // 检查响应数据结构
       if (res.data && 'result' in res.data) {

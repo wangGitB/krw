@@ -69,7 +69,6 @@ class WebSocketService {
       this.ws = new WebSocket(this.url);
 
       this.ws.onopen = () => {
-        this.log('连接成功');
         this.reconnectAttempts = 0;
         this.heartbeatRetries = 0;
         this.lastHeartbeatResponse = Date.now();
@@ -259,7 +258,7 @@ class WebSocketService {
       S: symbolId,
       S1: sourceId,
     };
-
+    console.log('订阅消息:', subMsg);
     // 保存订阅信息，以便重连时重新订阅
     this.subscriptions.push(subMsg);
 
