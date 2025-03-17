@@ -16,11 +16,11 @@
         <view class="absolute inset-0 z-0" style="background: linear-gradient(to right, #FFF5EC, #FFF3E9)" />
 
         <!-- 内容层 -->
-        <view class="relative z-1 w-full flex items-center justify-between">
+        <view class="relative z-1 w-full flex items-center justify-between" @click="handleCurrency">
           <text class="text-[32rpx] text-[#333]">
-            FDUSD/USDT
+            {{ selectedSymbol }}
           </text>
-          <view class="flex items-center" @click="handleCurrency">
+          <view class="flex items-center">
             <image :src="icon_right" class="h-[48rpx] w-[48rpx]" />
           </view>
         </view>
@@ -47,36 +47,40 @@
         <!-- 买入卖出按钮 -->
         <view class="mb-[24rpx] flex">
           <u-button
-            class="flex-1" :color="activeTab === 'buy' ? '#E53935' : '#FFE4E1'" text="买入"
-            :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'buy' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
+            class="flex-1" :color="activeTab === 'BUY' ? '#E53935' : '#FFE4E1'" text="买入"
+            :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'BUY' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
             @click="handleBuy"
           />
           <u-button
-            class="flex-1" :color="activeTab === 'sell' ? '#4CAF50' : '#FFE4E1'" text="卖出"
-            :custom-style="{ borderRadius: '0 8rpx 8rpx 0', width: '212rpx', height: '64rpx', color: activeTab === 'sell' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
+            class="flex-1" :color="activeTab === 'SELL' ? '#4CAF50' : '#FFE4E1'" text="卖出"
+            :custom-style="{ borderRadius: '0 8rpx 8rpx 0', width: '212rpx', height: '64rpx', color: activeTab === 'SELL' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
             @click="handleSell"
           />
         </view>
 
         <!-- 限单价 -->
-        <view class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]">
+        <view
+          class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]"
+          @click="showMakeTypePopup = true"
+        >
           <view class="relative flex items-center gap-[14rpx]">
             <image :src="home_icon4" class="h-[48rpx] w-[48rpx]" @tap.stop="toggleTooltip" />
             <!-- 添加 tooltip -->
             <view
               v-if="showTooltip"
               class="absolute bottom-[60rpx] left-0 z-10 w-[300rpx] rounded-[8rpx] bg-[#2C2C2C] p-[20rpx] shadow-lg transition-all duration-300 ease-in-out"
-              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop
+              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']"
+              @tap.stop
             >
               <text class="text-[24rpx] text-[#E6E6E6]">
-                限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。
+                {{ makeType === 'LIMIT' ? '限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。' : '市价委托是指以当前市场最优价格立即成交的委托方式。' }}
               </text>
               <view
                 class="absolute bottom-[-8rpx] left-[20rpx] h-0 w-0 border-l-[8rpx] border-r-[8rpx] border-t-[8rpx] border-l-transparent border-r-transparent border-t-[#2C2C2C]"
               />
             </view>
             <text class="text-[32rpx] text-[#333] font-bold">
-              限单价
+              {{ makeType === 'LIMIT' ? '限单价' : '市价' }}
             </text>
           </view>
           <image :src="home_icon5" class="h-[22rpx] w-[34rpx]" />
@@ -85,10 +89,10 @@
         <!-- 买入价格 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <text class="text-[24rpx] text-[#999999]">
-            买入价格(USDT)
+            {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}(USDT)
           </text>
           <text class="text-[32rpx] text-[#333333] font-bold">
-            {{ buyPrice }}
+            {{ buyOrSellPrice }}
           </text>
         </view>
 
@@ -106,7 +110,7 @@
         <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <slider
             :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
-            :active-color="activeTab === 'buy' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
+            :active-color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
             @change="handleSliderChange" @changing="handleSliderChanging"
           />
         </view>
@@ -128,7 +132,7 @@
               可用
             </text>
             <text class="ml-[8rpx] text-[24rpx] text-[#333333]">
-              {{ availableBalance }} USDT
+              {{ source_amount }} USDT
             </text>
           </view>
           <view
@@ -144,7 +148,7 @@
         <!-- 买入按钮 -->
         <view class="mt-[40rpx]">
           <u-button
-            text="买入 IP" :color="activeTab === 'buy' ? '#E53935' : '#4CAF50'"
+            :text="activeTab === 'BUY' ? '买入 IP' : '卖出 IP'" :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
             :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
           />
         </view>
@@ -167,10 +171,10 @@
               class="relative mb-[12rpx] h-[46rpx] flex items-center justify-between px-[12rpx]"
             >
               <!-- 修改卖单列表的背景样式 -->
-              <view
+              <!-- <view
                 class="absolute bottom-0 right-[12rpx] top-0 bg-[#FFE4E1] transition-all duration-300"
                 :style="{ width: `${(Number(item.amount.replace('K', '000')) / 1500) * 100}%` }"
-              />
+              /> -->
               <!-- 内容保持在最上层 -->
               <text class="relative z-1 text-[24rpx] text-[#E53935]">
                 {{ item.price }}
@@ -185,19 +189,15 @@
           <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
             <view>
               <text
-                class="text-[28rpx] font-bold transition-colors duration-100" :class="{
-                  'text-[#333]': !priceChangeDirection,
-                  'text-[#E53935]': priceChangeDirection === 'up',
-                  'text-[#00B069]': priceChangeDirection === 'down',
-                }"
+                class="text-[28rpx] font-bold transition-colors duration-100"
               >
                 {{ currentPrice }}
               </text>
-              <view class="mt-[4rpx]">
+              <!-- <view class="mt-[4rpx]">
                 <text class="text-[20rpx] text-[#999]">
                   ≈ ¥{{ (currentPrice * 7.23).toFixed(4) }}
                 </text>
-              </view>
+              </view> -->
             </view>
           </view>
 
@@ -208,10 +208,10 @@
               class="relative mb-[12rpx] h-[56rpx] flex items-center justify-between px-[12rpx]"
             >
               <!-- 添加背景色柱状图 -->
-              <view
+              <!-- <view
                 class="absolute bottom-0 right-0 top-0 bg-[#E8F5E9] transition-all duration-300"
                 :style="{ width: `${(Number(item.amount.replace('K', '000')) / 1500) * 100}%` }"
-              />
+              /> -->
               <!-- 内容保持在最上层 -->
               <text class="relative z-1 text-[24rpx] text-[#00B069]">
                 {{ item.price }}
@@ -225,7 +225,7 @@
       </view>
     </view>
     <!-- 委托 -->
-    <view class="mt-[40rpx] h-1156rpx overflow-auto bg-white p-x-[28rpx] p-b-[28rpx]">
+    <view class="mt-[40rpx] h-1160rpx overflow-auto bg-white p-x-[28rpx] p-b-[28rpx]">
       <view v-for="item in 3" :key="item" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
         <view class="px-[28rpx]">
           <view class="flex items-center justify-between">
@@ -292,10 +292,97 @@
         </view>
       </view>
     </view>
+
+    <!-- 币种选择弹出层 -->
+    <u-popup
+      :show="showSymbolPicker" mode="bottom" :mask="true" :safe-area-inset-bottom="true"
+      @close="showSymbolPicker = false"
+    >
+      <view class="bg-white p-[30rpx]">
+        <view class="flex items-center justify-between border-b border-gray-100 pb-[20rpx]">
+          <text class="text-[32rpx] font-bold">
+            选择交易对
+          </text>
+          <u-icon name="close" size="32" @click="showSymbolPicker = false" />
+        </view>
+        <scroll-view scroll-y style="max-height: 600rpx;">
+          <view
+            v-for="(item, index) in symbolList" :key="index"
+            class="flex items-center justify-between border-b border-gray-100 py-[24rpx]" @click="selectSymbol(item)"
+          >
+            <view class="flex items-center">
+              <text class="text-[28rpx]">
+                {{ item.target_name }}/{{ item.source_name }}
+              </text>
+              <text class="ml-[10rpx] text-[24rpx] text-gray-500">
+                {{ item.exchange_name }}
+              </text>
+            </view>
+            <u-icon
+              v-if="selectedUniqueSymbolId === getSymbolId(item)" name="checkmark-circle" color="#07c160"
+              size="32"
+            />
+          </view>
+          <view v-if="symbolList.length === 0" class="py-[40rpx] text-center text-gray-500">
+            暂无可用交易对
+          </view>
+        </scroll-view>
+      </view>
+    </u-popup>
+
+    <!-- 委托类型选择弹出层 -->
+    <u-popup
+      :show="showMakeTypePopup"
+      mode="bottom"
+      :mask="true"
+      :safe-area-inset-bottom="true"
+      @close="showMakeTypePopup = false"
+    >
+      <view class="bg-white p-[30rpx]">
+        <view class="flex items-center justify-between border-b border-gray-100 pb-[20rpx]">
+          <text class="text-[32rpx] font-bold">
+            选择委托类型
+          </text>
+          <u-icon name="close" size="32" @click="showMakeTypePopup = false" />
+        </view>
+        <view class="py-[20rpx]">
+          <view
+            class="flex items-center justify-between border-b border-gray-100 py-[24rpx]"
+            @click="selectMakeType('LIMIT')"
+          >
+            <view class="flex items-center">
+              <text class="text-[28rpx]">
+                限价委托
+              </text>
+              <text class="ml-[10rpx] text-[24rpx] text-gray-500">
+                以特定或更优价格进行买卖
+              </text>
+            </view>
+            <u-icon v-if="makeType === 'LIMIT'" name="checkmark-circle" color="#07c160" size="32" />
+          </view>
+          <view
+            class="flex items-center justify-between py-[24rpx]"
+            @click="selectMakeType('MARKET')"
+          >
+            <view class="flex items-center">
+              <text class="text-[28rpx]">
+                市价委托
+              </text>
+              <text class="ml-[10rpx] text-[24rpx] text-gray-500">
+                以市场最优价格立即成交
+              </text>
+            </view>
+            <u-icon v-if="makeType === 'MARKET'" name="checkmark-circle" color="#07c160" size="32" />
+          </view>
+        </view>
+      </view>
+    </u-popup>
   </c-container>
 </template>
 
 <script setup lang="ts">
+import type { SymbolInfosRes } from '@/api/home';
+import { getSymbolInfos, getSymbolSetting } from '@/api/home';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -303,80 +390,43 @@ import home_icon2 from '@/static/images/home/home_icon2.png';
 import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
-import { useUserStore } from '@/store';
-// import { LOGIN_PATH } from '@/router';
 import { getGoogleToken } from '@/utils';
 import WebSocketService from '@/utils/ws';
 // WebSocketService
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
-const token = getGoogleToken();
-console.log('token', token);
-const WSURL = import.meta.env.VITE_WS_URL;
-console.log('WSURL', WSURL);
-
-const wsService = new WebSocketService(`${WSURL}/wss?Authorization=${token}`);
-// 建立连接
-wsService.connect();
-
-// 监听消息
-wsService.onMessage((message) => {
-  console.log('收到服务端消息:', message);
-
-  // 判断消息类型
-  if (message.type === 'chat') {
-    console.log('聊天消息:', message.content);
-  }
-});
-
-const home_icon_list = ref([
-  {
-    icon: home_icon1,
-    text: '1,440.6',
-  },
-  {
-    icon: home_icon2,
-    text: '1,441.1',
-  },
-  {
-    icon: home_icon3,
-    text: '1,456.2',
-  },
-
-]);
-const userStore = useUserStore();
-console.log('userStore.user_name', userStore.user_name);
-
+// 添加当前价格的响应式引用
+const currentPrice = ref(0);
+// 源币数量
+const source_amount = ref('');
 // 当前激活的标签页（买入/卖出）
-const activeTab = ref('buy'); // 默认选中买入
-
-// TODO: 币种选择
-const handleCurrency = () => {
-  console.log('handleCurrency');
-};
-
+const activeTab = ref('BUY'); // 默认选中买入
 // 买入按钮点击事件
 const handleBuy = () => {
-  console.log('点击买入');
-  activeTab.value = 'buy';
+  activeTab.value = 'BUY';
 };
 
 // 卖出按钮点击事件
 const handleSell = () => {
-  console.log('点击卖出');
-  activeTab.value = 'sell';
+  activeTab.value = 'SELL';
 };
 
 // 添加 tooltip 控制变量
 const showTooltip = ref(false);
 
+// 点击页面任意位置关闭tooltip
+const closeTooltip = () => {
+  showTooltip.value = false;
+};
+
 // 添加 tooltip 切换方法
-const toggleTooltip = () => {
+const toggleTooltip = (e: Event) => {
+  e.stopPropagation(); // 阻止事件冒泡
   showTooltip.value = !showTooltip.value;
 };
 
-// 买入价格
-const buyPrice = ref('1,440.6');
+// 买入或卖出价格
+const buyOrSellPrice = ref('');
 
 // 滑动条相关变量
 const minValue = ref(0);
@@ -392,14 +442,175 @@ const handleSliderChanging = (e: any) => {
   sliderValue.value = e.detail.value;
 };
 
-// 添加定时器引用
-let priceUpdateTimer: number | null = null;
+const handleAdd = () => {
+  console.log('点击添加');
+};
+// 卖单数据
+const sellOrders = ref<{ price: string; amount: string }[]>([]);
 
-// 添加点击其他区域关闭 tooltip
+// 买单数据
+const buyOrders = ref<{ price: string; amount: string }[]>([]);
+
+const token = getGoogleToken();
+const WSURL = import.meta.env.VITE_WS_URL;
+
+const wsService = new WebSocketService(`${WSURL}/wss?Authorization=${token}`);
+// 建立连接
+wsService.connect();
+
+// 初始化行情数据
+const home_icon_list = ref([
+  {
+    icon: home_icon1,
+    text: '0.00', // BP - 买入价格
+  },
+  {
+    icon: home_icon2,
+    text: '0.00', // TP - 卖出价格
+  },
+  {
+    icon: home_icon3,
+    text: '0.00', // TM - 24小时最高价
+  },
+]);
+
+// 监听消息
+wsService.onMessage((message) => {
+  console.log('收到服务端消息:', message);
+
+  // 处理价格行情数据
+  if (message.T === 'B') {
+    // 更新行情数据 - BP(买入价格)、TP(卖出价格)、TM(24小时最高价)
+    if (message.BP) {
+      home_icon_list.value[0].text = message.BP.toLocaleString();
+    }
+
+    if (message.TP) {
+      home_icon_list.value[1].text = message.TP.toLocaleString();
+    }
+
+    if (message.TM) {
+      home_icon_list.value[2].text = message.TM.toLocaleString();
+    }
+  }
+
+  if (message.T === 'P') {
+    // 处理深度数据
+    if (message.A && message.B) {
+      // A是买单列表，需要反转
+      buyOrders.value = [...message.A].reverse().map(item => ({
+        price: item.P,
+        amount: item.V,
+      }));
+
+      // B是卖单列表，需要反转
+      sellOrders.value = [...message.B].reverse().map(item => ({
+        price: item.P,
+        amount: item.V,
+      }));
+
+      if (activeTab.value === 'BUY') {
+        buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
+      }
+      else if (activeTab.value === 'SELL') {
+        buyOrSellPrice.value = sellOrders.value[0].price;
+      }
+    }
+  }
+  if (message.T === 'D') {
+    currentPrice.value = message.price;
+  }
+});
+
+// 币种选择相关数据
+const showSymbolPicker = ref(false);
+const symbolList = ref<SymbolInfosRes[]>([]);
+// 选择的交易对显示文字
+const selectedSymbol = ref('');
+const selectedUniqueSymbolId = ref<string | null>(null);
+const selectedSymbolId = ref<number | null>(null);
+const selectedExchangeId = ref<number | null>(null);
+const selectedSourceId = ref<number | null>(null);
+// 获取交易对唯一标识
+const getSymbolId = (item: any): string => {
+  return `${item.source_id}_${item.target_id}_${item.exchange_id}`;
+};
+
+// 选择交易对
+const selectSymbol = (item: SymbolInfosRes): void => {
+  selectedSymbol.value = `${item.source_name}/${item.target_name}`;
+  selectedUniqueSymbolId.value = getSymbolId(item);
+  selectedSymbolId.value = item.target_id;
+  selectedExchangeId.value = item.exchange_id;
+  selectedSourceId.value = item.source_id;
+  showSymbolPicker.value = false;
+};
+
+const handleCurrency = () => {
+  showSymbolPicker.value = true;
+};
+
+// 获取交易对列表
+const fetchSymbolList = async (): Promise<void> => {
+  try {
+    const res = await getSymbolInfos();
+    console.log('交易对列表:', res);
+    symbolList.value = res || [];
+    // 如果有数据，默认选中第一个
+    if (symbolList.value.length > 0) {
+      const firstItem = symbolList.value[0];
+      selectedSymbol.value = `${firstItem.target_name}/${firstItem.source_name}`;
+      selectedUniqueSymbolId.value = getSymbolId(firstItem);
+      selectedSymbolId.value = firstItem.target_id;
+      selectedExchangeId.value = firstItem.exchange_id;
+      selectedSourceId.value = firstItem.source_id;
+    }
+  }
+  catch (error) {
+    console.error('获取交易对列表失败:', error);
+  }
+};
+
+// 获取交易对设置
+const fetchSymbolSetting = async (): Promise<void> => {
+  const res = await getSymbolSetting({ symbol_id: selectedSymbolId.value!, source_id: selectedSourceId.value!, exchange_id: selectedExchangeId.value! });
+  console.log('交易对设置:', res);
+  source_amount.value = res.source_amount_display;
+};
+const initData = async () => {
+  await fetchSymbolList();
+  await fetchSymbolSetting();
+};
+// 页面加载时获取交易对列表
 onMounted(() => {
-  // 每 2 秒更新一次价格
-  // eslint-disable-next-line ts/no-use-before-define
-  priceUpdateTimer = setInterval(updatePrice, 2000);
+  // 添加全局点击事件监听
+  document.addEventListener('click', () => {
+    if (showTooltip.value) {
+      closeTooltip();
+    }
+  });
+
+  // 初始化数据
+  initData();
+  if (selectedExchangeId.value && selectedSymbolId.value && selectedSourceId.value) {
+    // 订阅价格变化
+    wsService.subscribe('P', selectedExchangeId.value, selectedSymbolId.value, selectedSourceId.value);
+  }
+});
+
+// 在组件卸载前取消订阅并关闭WebSocket
+onBeforeUnmount(() => {
+  wsService.unsubscribe();
+
+  // 关闭WebSocket连接
+  wsService.close();
+
+  // 移除全局点击事件监听
+  document.removeEventListener('click', () => {
+    if (showTooltip.value) {
+      closeTooltip();
+    }
+  });
 });
 
 onPageScroll(() => {
@@ -408,79 +619,18 @@ onPageScroll(() => {
   }
 });
 
-// 这里可以添加行情数据的获取和处理逻辑
-const availableBalance = ref('6.51828322');
+// 委托类型选择相关
+const makeType = ref('LIMIT'); // 默认限价委托
+const showMakeTypePopup = ref(false);
 
-const handleAdd = () => {
-  console.log('点击添加');
+// 选择委托类型
+const selectMakeType = (type: 'LIMIT' | 'MARKET') => {
+  makeType.value = type;
+  showMakeTypePopup.value = false;
 };
-
-// 卖单数据
-const sellOrders = ref([
-  { price: '10.666', amount: '1.21K' },
-  { price: '10.665', amount: '453.94' },
-  { price: '10.664', amount: '237.66' },
-  { price: '10.663', amount: '118.59' },
-  { price: '10.662', amount: '142.77' },
-]);
-
-// 买单数据
-const buyOrders = ref([
-  { price: '10.659', amount: '0.15' },
-  { price: '10.658', amount: '0.61' },
-  { price: '10.657', amount: '91.57' },
-  { price: '10.656', amount: '330.53' },
-  { price: '10.655', amount: '550.94' },
-]);
-
-// 添加当前价格的响应式引用
-const currentPrice = ref(10.659);
-const priceChangeDirection = ref<'up' | 'down' | null>(null);
-
-// 更新价格的函数
-const updatePrice = () => {
-  const oldPrice = currentPrice.value;
-  // 随机生成价格变化
-  const change = (Math.random() - 0.5) * 0.01;
-  currentPrice.value = Number((oldPrice + change).toFixed(3));
-
-  // 设置价格变化方向
-  priceChangeDirection.value = change > 0 ? 'up' : 'down';
-
-  // 100ms 后重置方向，移除动画效果
-  setTimeout(() => {
-    priceChangeDirection.value = null;
-  }, 100);
-
-  // 更新买卖单数据
-  // eslint-disable-next-line ts/no-use-before-define
-  updateOrderBooks();
-};
-
-// 更新买卖单数据
-const updateOrderBooks = () => {
-  // 更新卖单
-  sellOrders.value = sellOrders.value.map((_order, index) => ({
-    price: (currentPrice.value + (0.001 * (5 - index))).toFixed(3),
-    amount: (Math.random() * 1000 + 100).toFixed(2),
-  }));
-
-  // 更新买单
-  buyOrders.value = buyOrders.value.map((_order, index) => ({
-    price: (currentPrice.value - (0.001 * (index + 1))).toFixed(3),
-    amount: (Math.random() * 1000 + 100).toFixed(2),
-  }));
-};
-
-// 在组件卸载前清除定时器
-onBeforeUnmount(() => {
-  if (priceUpdateTimer) {
-    clearInterval(priceUpdateTimer);
-  }
-});
 </script>
 
-<style>
+<style scoped>
 .slider-custom {
   margin: 0;
 }

@@ -3,6 +3,15 @@ interface Message {
   content?: any;
 }
 
+// 添加订阅消息接口
+interface SubMessage {
+  T: string; // 订阅类型 S 订阅。S1 取消订阅 P 心跳
+  N: string; // O 订单变化 P 价格变化
+  E: number; // exchangeId
+  S: number; // symbolId
+  S1: number; // sourceId
+}
+
 type IntervalType = ReturnType<typeof setInterval>;
 type TimeoutType = ReturnType<typeof setTimeout>;
 
@@ -23,6 +32,7 @@ class WebSocketService {
   private debugMode: boolean = true;
   private heartbeatRetries: number = 0;
   private maxHeartbeatRetries: number = 3;
+  private subscriptions: SubMessage[] = []; // 存储当前的订阅
 
   constructor(url: string) {
     this.url = url;
@@ -30,12 +40,13 @@ class WebSocketService {
     this.heartbeatInterval = null;
     this.reconnectTimeout = null;
     this.reconnectDelay = 5000; // 增加重连延迟到5秒
-    this.heartbeatMsg = JSON.stringify({ type: 'ping' }); // 心跳消息
+    this.heartbeatMsg = JSON.stringify({ T: 'P' }); // 更新心跳消息格式
     this.onMessageCallback = null;
     this.reconnectAttempts = 0;
     this.lastHeartbeatResponse = Date.now();
     this.isManualClose = false;
     this.heartbeatRetries = 0;
+    this.subscriptions = [];
   }
 
   private log(...args: any[]): void {
@@ -63,14 +74,22 @@ class WebSocketService {
         this.heartbeatRetries = 0;
         this.lastHeartbeatResponse = Date.now();
         this.startHeartbeat();
+
+        // 重新发送所有已保存的订阅
+        if (this.subscriptions.length > 0) {
+          this.log('重新发送已保存的订阅，数量:', this.subscriptions.length);
+          this.subscriptions.forEach((sub) => {
+            this.sendMessage(sub);
+            this.log('重新订阅:', sub);
+          });
+        }
       };
 
       this.ws.onmessage = (event: MessageEvent) => {
+        console.log('收到消息:', event.data);
         try {
-          const data: Message = JSON.parse(event.data);
-          this.log('收到消息:', data);
-
-          if (data.type === 'pong') {
+          // 处理心跳响应
+          if (event.data === 'pong') {
             this.log('收到心跳响应');
             this.lastHeartbeatResponse = Date.now();
             this.heartbeatRetries = 0;
@@ -79,9 +98,12 @@ class WebSocketService {
               this.pingTimeout = null;
             }
           }
-
-          if (this.onMessageCallback) {
-            this.onMessageCallback(data);
+          else {
+            const data = JSON.parse(event.data);
+            this.log('收到消息:', data);
+            if (this.onMessageCallback) {
+              this.onMessageCallback(data);
+            }
           }
         }
         catch (error) {
@@ -114,7 +136,7 @@ class WebSocketService {
   }
 
   // 设置外部监听回调
-  onMessage(callback: (message: Message) => void): void {
+  onMessage(callback: (message: any) => void): void {
     this.onMessageCallback = callback;
   }
 
@@ -192,7 +214,7 @@ class WebSocketService {
     }, this.reconnectDelay);
   }
 
-  sendMessage(message: Message): void {
+  sendMessage(message: any): void {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     }
@@ -226,6 +248,38 @@ class WebSocketService {
     this.isManualClose = false;
     this.reconnectAttempts = 0;
     this.connect();
+  }
+
+  // 添加订阅方法
+  subscribe(notificationType: string, exchangeId: number, symbolId: number, sourceId: number): void {
+    const subMsg: SubMessage = {
+      T: 'S', // 订阅类型
+      N: notificationType, // 通知类型：O 订单变化，P 价格变化
+      E: exchangeId,
+      S: symbolId,
+      S1: sourceId,
+    };
+
+    // 保存订阅信息，以便重连时重新订阅
+    this.subscriptions.push(subMsg);
+
+    // 发送订阅消息
+    this.sendMessage(subMsg);
+    this.log('发送订阅消息:', subMsg);
+  }
+
+  // 取消订阅方法
+  unsubscribe(): void {
+    const unsubMsg = {
+      T: 'S1', // 取消订阅类型
+    };
+
+    // 从订阅列表中移除
+    this.subscriptions = [];
+
+    // 发送取消订阅消息
+    this.sendMessage(unsubMsg);
+    this.log('发送取消订阅消息:', unsubMsg);
   }
 }
 
