@@ -101,3 +101,26 @@ export interface ResetTradePwdReq {
 }
 
 export const resetTradePwd = (data: ResetTradePwdReq) => post('/user/reset_trade_pwd', { data });
+
+/**
+ * ResetPwdReq
+ */
+export interface ModifyPasswordReq {
+  /**
+   * google验证码
+   */
+  google_code: string;
+  /**
+   * 新密码
+   */
+  new_pwd: string;
+  /**
+   * 原始密码
+   */
+  old_pwd: string;
+}
+
+/**
+ * 修改密码
+ */
+export const modifyPassword = (data: ModifyPasswordReq) => post('/user/reset_pwd', { data });

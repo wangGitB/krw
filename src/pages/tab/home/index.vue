@@ -830,6 +830,26 @@ const getSymbolId = (item: any): string => {
   return `${item.source_id}_${item.target_id}_${item.exchange_id}`;
 };
 
+// 保存选择的币种到本地存储
+const saveSelectedSymbolToLocal = (item: SymbolInfosRes): void => {
+  const symbolInfo = {
+    symbol: `${item.target_name}/${item.source_name}`,
+    uniqueId: getSymbolId(item),
+    symbolId: item.target_id,
+    exchangeId: item.exchange_id,
+    sourceId: item.source_id,
+    targetName: item.target_name,
+    sourceName: item.source_name,
+  };
+  storage.set('selected_symbol', JSON.stringify(symbolInfo));
+};
+
+// 从本地存储获取币种信息
+const getSelectedSymbolFromLocal = (): any => {
+  const symbolData = storage.get('selected_symbol');
+  return symbolData ? JSON.parse(symbolData) : null;
+};
+
 // 选择交易对
 const selectSymbol = (item: SymbolInfosRes): void => {
   selectedSymbol.value = `${item.target_name}/${item.source_name}`;
@@ -838,6 +858,8 @@ const selectSymbol = (item: SymbolInfosRes): void => {
   selectedExchangeId.value = item.exchange_id;
   selectedSourceId.value = item.source_id;
   showSymbolPicker.value = false;
+  // 将选择的币种信息保存到本地存储
+  saveSelectedSymbolToLocal(item);
 };
 
 const handleCurrency = () => {
@@ -849,14 +871,26 @@ const fetchSymbolList = async (): Promise<void> => {
   try {
     const res = await getSymbolInfos();
     symbolList.value = res || [];
-    // 如果有数据，默认选中第一个
-    if (symbolList.value.length > 0) {
+    // 先尝试从本地存储获取选中的币种
+    const savedSymbol = getSelectedSymbolFromLocal();
+    if (savedSymbol && symbolList.value.some(item => getSymbolId(item) === savedSymbol.uniqueId)) {
+      // 如果本地有存储的币种且币种列表中存在该币种，则使用保存的币种
+      selectedSymbol.value = savedSymbol.symbol;
+      selectedUniqueSymbolId.value = savedSymbol.uniqueId;
+      selectedSymbolId.value = savedSymbol.symbolId;
+      selectedExchangeId.value = savedSymbol.exchangeId;
+      selectedSourceId.value = savedSymbol.sourceId;
+    }
+    else if (symbolList.value.length > 0) {
+      // 如果本地没有存储币种或者保存的币种不在当前列表中，则默认选中第一个
       const firstItem = symbolList.value[0];
       selectedSymbol.value = `${firstItem.target_name}/${firstItem.source_name}`;
       selectedUniqueSymbolId.value = getSymbolId(firstItem);
       selectedSymbolId.value = firstItem.target_id;
       selectedExchangeId.value = firstItem.exchange_id;
       selectedSourceId.value = firstItem.source_id;
+      // 将默认选择的币种保存到本地
+      saveSelectedSymbolToLocal(firstItem);
     }
   }
   catch (error) {

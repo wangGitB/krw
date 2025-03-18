@@ -1,27 +1,30 @@
 <template>
-  <view class="withdrawal-container">
-    <!-- 顶部导航 -->
-    <view class="header">
-      <view class="back-icon">
-        <text class="iconfont icon-left" />
-      </view>
-      <view class="title">
-        提币
-      </view>
-    </view>
-
+  <c-header title="提币" :show-back="false" />
+  <c-container class="px-28rpx">
     <!-- 表单内容 -->
     <view class="form-container">
       <!-- 币种选择 -->
-      <view class="form-item">
+      <view class="form-item currency-select-item" @click="showCurrencyPicker = true">
         <view class="label">
           币种
         </view>
         <view class="input-wrapper">
-          <view class="value">
-            KRW
+          <view class="currency-value">
+            {{ selectedCurrency.symbol_name || '请选择币种' }}
           </view>
-          <text class="iconfont icon-right" />
+          <u-icon name="arrow-down" size="28rpx" color="#666" class="down-arrow" />
+        </view>
+      </view>
+
+      <!-- 可用余额 -->
+      <view class="form-item">
+        <view class="label">
+          可用余额
+        </view>
+        <view class="input-wrapper">
+          <view class="value">
+            {{ balance }}
+          </view>
         </view>
       </view>
 
@@ -60,13 +63,13 @@
         <view class="fee-item">
           <text>网络手续费：</text>
           <text class="fee-value">
-            1,000
+            {{ withdrawFee }}
           </text>
         </view>
         <view class="fee-item">
           <text>实际到账：</text>
           <text class="fee-value">
-            99,000
+            {{ actualAmount }}
           </text>
         </view>
       </view>
@@ -81,19 +84,100 @@
         提币历史
       </view>
     </view>
-  </view>
+  </c-container>
+
+  <!-- 币种选择弹出层 -->
+  <u-popup :show="showCurrencyPicker" mode="bottom" @close="showCurrencyPicker = false">
+    <view class="currency-picker">
+      <view class="currency-picker-header">
+        <text>选择币种</text>
+        <u-icon name="close" @click="showCurrencyPicker = false" />
+      </view>
+      <view class="currency-picker-body">
+        <view
+          v-for="item in currencyList"
+          :key="item.symbol_id"
+          class="currency-item"
+          @click="selectCurrency(item)"
+        >
+          <text>{{ item.symbol_name }}</text>
+          <text>可用: {{ item.amount }}</text>
+        </view>
+      </view>
+    </view>
+  </u-popup>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { getCurrency, type MySymbol } from '@/api/my/index';
+import { withdrawal, type WithdrawReq } from '@/api/withdraw/index';
+import { computed, onMounted, ref } from 'vue';
 
-// const userStore = useUserStore();
+// 响应式数据
 const amount = ref('');
 const confirmAmount = ref('');
 const verificationCode = ref('');
+const currencyList = ref<MySymbol[]>([]);
+const selectedCurrency = ref<MySymbol>({} as MySymbol);
+const showCurrencyPicker = ref(false);
+
+// 计算余额
+const balance = computed(() => {
+  return selectedCurrency.value.amount || '0';
+});
+
+// 计算网络手续费
+const withdrawFee = computed(() => {
+  if (!amount.value) return '0';
+  const amountNum = Number.parseFloat(amount.value);
+  const feeRate = Number.parseFloat(selectedCurrency.value.withdraw_fee || '0');
+  return (amountNum * feeRate).toFixed(2);
+});
+
+// 计算实际到账金额
+const actualAmount = computed(() => {
+  if (!amount.value) return '0';
+  const amountNum = Number.parseFloat(amount.value);
+  const feeRate = Number.parseFloat(selectedCurrency.value.withdraw_fee || '0');
+  return (amountNum * (1 - feeRate)).toFixed(2);
+});
+
+// 选择币种
+const selectCurrency = (currency: MySymbol) => {
+  selectedCurrency.value = currency;
+  showCurrencyPicker.value = false;
+};
+
+// 获取可用币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrency();
+    if (res) {
+      currencyList.value = Array.isArray(res) ? res : [res];
+      if (currencyList.value.length > 0) {
+        selectCurrency(currencyList.value[0]);
+      }
+    }
+  }
+  catch (error) {
+    console.error('获取币种列表失败', error);
+    uni.showToast({
+      title: '获取币种列表失败',
+      icon: 'none',
+    });
+  }
+};
 
 // 处理确认提交
-const handleConfirm = () => {
+const handleConfirm = async () => {
+  if (!selectedCurrency.value.symbol_id) {
+    uni.showToast({
+      title: '请选择币种',
+      icon: 'none',
+    });
+    return;
+  }
+
   if (!amount.value) {
     uni.showToast({
       title: '请输入提币数量',
@@ -118,20 +202,80 @@ const handleConfirm = () => {
     return;
   }
 
-  // 提交提币请求
-  console.log('提交提币请求', {
-    currency: 'KRW',
-    amount: amount.value,
-    verificationCode: verificationCode.value,
-  });
+  if (Number.parseFloat(amount.value) > Number.parseFloat(balance.value)) {
+    uni.showToast({
+      title: '提币金额不能大于可用余额',
+      icon: 'none',
+    });
+    return;
+  }
+
+  try {
+    // 弹窗二次确认
+    uni.showModal({
+      title: '提币确认',
+      content: `您确定要提取 ${amount.value} ${selectedCurrency.value.symbol_name} 吗？实际到账 ${actualAmount.value}`,
+      confirmText: '确认',
+      cancelText: '取消',
+      success: async (res) => {
+        if (res.confirm) {
+          // 提交提币请求
+          const data: WithdrawReq = {
+            amount: amount.value,
+            google_code: verificationCode.value,
+            sign: '', // 这里可能需要从其他地方获取签名
+            symbol_id: selectedCurrency.value.symbol_id,
+            t: Date.now(),
+          };
+
+          // 显示加载中
+          uni.showLoading({
+            title: '提交中',
+          });
+
+          const res = await withdrawal(data);
+
+          // 隐藏加载
+          uni.hideLoading();
+
+          if (res) {
+            uni.showToast({
+              title: '提币申请已提交',
+              icon: 'success',
+            });
+
+            // 清空表单
+            amount.value = '';
+            confirmAmount.value = '';
+            verificationCode.value = '';
+
+            // 刷新币种列表
+            fetchCurrencyList();
+          }
+        }
+      },
+    });
+  }
+  catch (error) {
+    console.error('提币失败', error);
+    uni.showToast({
+      title: '提币失败，请稍后重试',
+      icon: 'none',
+    });
+  }
 };
 
 // 跳转到提币历史页面
 const goToHistory = () => {
   uni.navigateTo({
-    url: '/pages/tab/withdrawal/history',
+    url: '/pages/withdrawal-history/index',
   });
 };
+
+// 页面加载时获取币种列表
+onMounted(() => {
+  fetchCurrencyList();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -229,9 +373,72 @@ const goToHistory = () => {
   justify-content: center;
   height: 90rpx;
   font-size: 32rpx;
-  color: #333;
-  background-color: #fff;
+  color: #E6302F;
+  background-color: #FFE9E8;
   border: 1px solid #eee;
   border-radius: 45rpx;
+}
+
+.currency-picker {
+  padding-bottom: 30rpx;
+  background-color: #fff;
+  border-radius: 16rpx 16rpx 0 0;
+}
+
+.currency-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.currency-picker-body {
+  max-height: 600rpx;
+  overflow-y: auto;
+}
+
+.currency-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 30rpx;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.currency-item:active {
+  background-color: #f5f5f5;
+}
+
+.currency-select-item {
+  position: relative;
+  background-color: #fff;
+  border-radius: 10rpx;
+
+  &:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 30rpx;
+    right: 30rpx;
+    height: 1px;
+    background-color: #f5f5f5;
+  }
+
+  .input-wrapper {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .currency-value {
+    font-size: 32rpx;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .down-arrow {
+    margin-left: 10rpx;
+  }
 }
 </style>

@@ -30,6 +30,13 @@
       "needLogin": true
     },
     {
+      "path": "pages/withdrawal-history/index",
+      "style": {
+        "navigationStyle": "custom"
+      },
+      "needLogin": true
+    },
+    {
       "path": "pages/tab/user/index",
       "style": {
         "navigationStyle": "custom"
@@ -39,8 +46,7 @@
     {
       "path": "pages/order/detail/index",
       "style": {
-        "navigationStyle": "custom",
-        "navigationBarTextStyle": "black"
+        "navigationStyle": "custom"
       }
     },
     {

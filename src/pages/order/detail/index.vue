@@ -1,93 +1,95 @@
 <template>
-  <view class="min-h-screen bg-gray-50">
-    <!-- 顶部导航栏 -->
-    <view class="flex items-center border-b border-gray-100 bg-white p-30rpx">
-      <view class="flex items-center" @click="goBack">
-        <u-icon name="arrow-left" size="20" color="#333" />
-      </view>
-      <view class="mx-auto text-32rpx font-bold">
-        订单详情
-      </view>
-      <view class="flex items-center" @click="goToTrade">
-        <text class="text-28rpx text-red-500">
-          去交易
-        </text>
-        <u-icon name="arrow-right" size="14" color="#ff0000" />
+  <c-header title="订单详情" @back="goBack" />
+  <c-container class="px-28rpx">
+    <!-- 交易对信息 -->
+    <view class="my-20rpx rounded-md bg-white p-30rpx">
+      <view class="flex items-center justify-between">
+        <view class="flex items-center">
+          <view class="text-36rpx font-bold">
+            {{ orderDetail.symbol }}
+          </view>
+          <view
+            class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
+            :class="orderDetail.order_side === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
+          >
+            {{ orderDetail.order_side === 'BUY' ? '买入' : '卖出' }}
+          </view>
+          <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
+            {{ orderDetail.make_type === 'MARKET' ? '市价' : '限价' }}
+          </view>
+        </view>
+        <view class="flex items-center" @click="goToTrade">
+          <text class="text-28rpx text-red-500">
+            去交易
+          </text>
+          <u-icon name="arrow-right" size="14" color="#ff0000" />
+        </view>
       </view>
     </view>
 
-    <!-- 交易对信息 -->
-    <view class="flex items-center bg-white p-30rpx">
-      <view class="text-36rpx font-bold">
-        {{ orderDetail.symbol }}
-      </view>
-      <view
-        class="ml-20rpx rounded-8rpx px-16rpx py-4rpx text-24rpx"
-        :class="orderDetail.order_side === 'BUY' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50'"
-      >
-        {{ orderDetail.order_side === 'BUY' ? '买入' : '卖出' }}
-      </view>
-      <view class="ml-20rpx rounded-8rpx bg-orange-50 px-16rpx py-4rpx text-24rpx text-orange-500">
-        {{ orderDetail.make_type === 'MARKET' ? '市价' : '限价' }}
-      </view>
-      <view
-        class="ml-auto rounded-8rpx px-16rpx py-4rpx text-24rpx"
-        :class="getStatusClass(orderDetail.status)"
-      >
-        {{ getStatusText(orderDetail.status) }}
+    <!-- 订单详情标题 -->
+    <view class="mt-20rpx border-b border-gray-100 bg-white p-30rpx">
+      <view class="flex items-center">
+        <view class="mr-16rpx h-32rpx w-8rpx rounded-4rpx bg-red-500" />
+        <text class="text-32rpx font-bold">
+          订单详情
+        </text>
+        <view class="ml-auto rounded-full bg-green-50 px-16rpx py-4rpx text-24rpx text-green-500">
+          全部完成
+        </view>
       </view>
     </view>
 
     <!-- 订单详情信息 -->
-    <view class="mt-20rpx bg-white p-30rpx">
-      <view class="border-b border-gray-50 pb-20rpx">
-        <view class="mb-10rpx text-28rpx text-gray-500">
+    <view class="bg-white p-30rpx">
+      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+        <text class="text-28rpx text-gray-600">
           委托价格(USDT)
-        </view>
-        <view class="text-36rpx font-bold">
+        </text>
+        <text class="text-28rpx">
           {{ orderDetail.price }}
-        </view>
+        </text>
       </view>
 
-      <view class="border-b border-gray-50 py-20rpx">
-        <view class="mb-10rpx text-28rpx text-gray-500">
+      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+        <text class="text-28rpx text-gray-600">
           成交均价(USDT)
-        </view>
-        <view class="text-36rpx font-bold">
+        </text>
+        <text class="text-28rpx">
           {{ orderDetail.avg_price }}
-        </view>
+        </text>
       </view>
 
-      <view class="border-b border-gray-50 py-20rpx">
-        <view class="mb-10rpx text-28rpx text-gray-500">
+      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+        <text class="text-28rpx text-gray-600">
           委托数量(HSK)
-        </view>
-        <view class="text-36rpx font-bold">
+        </text>
+        <text class="text-28rpx">
           {{ orderDetail.amount || '0' }}
-        </view>
+        </text>
       </view>
 
-      <view class="border-b border-gray-50 py-20rpx">
-        <view class="mb-10rpx text-28rpx text-gray-500">
+      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+        <text class="text-28rpx text-gray-600">
           成交数量(HSK)
-        </view>
-        <view class="text-36rpx font-bold">
+        </text>
+        <text class="text-28rpx">
           {{ orderDetail.deal_amount || '0' }}
-        </view>
+        </text>
       </view>
 
-      <view class="border-b border-gray-50 py-20rpx">
-        <view class="mb-10rpx text-28rpx text-gray-500">
+      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+        <text class="text-28rpx text-gray-600">
           成交额(USDT)
-        </view>
-        <view class="text-36rpx font-bold">
-          {{ calculateTotal() }}
-        </view>
+        </text>
+        <text class="text-28rpx">
+          {{ orderDetail.volume || '0' }}
+        </text>
       </view>
 
       <!-- 进度条 -->
-      <view class="py-20rpx">
-        <view class="relative h-8rpx w-full overflow-hidden rounded-full bg-gray-200">
+      <view class="border-t border-gray-50 pt-20rpx">
+        <view class="relative h-6rpx w-full overflow-hidden rounded-full bg-gray-200">
           <view
             class="absolute left-0 top-0 h-full bg-red-500"
             :style="{ width: `${calculateProgress()}%` }"
@@ -99,20 +101,16 @@
           </text>
         </view>
       </view>
-    </view>
-
-    <!-- 订单信息 -->
-    <view class="mt-20rpx bg-white p-30rpx">
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
           订单号
         </text>
         <view class="flex items-center">
-          <text class="text-28rpx">
-            {{ orderId }}
+          <text class="max-w-250rpx truncate text-28rpx">
+            {{ orderDetail.order_id }}
           </text>
           <view class="ml-10rpx" @click="copyOrderId">
-            <u-icon name="file-copy" size="20" color="#999" />
+            <image src="@/static/images/list_detail/copy.png" class="h-36rpx w-36rpx" mode="aspectFit" />
           </view>
         </view>
       </view>
@@ -135,7 +133,7 @@
         </text>
       </view>
 
-      <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
+      <view class="flex items-center justify-between py-20rpx">
         <text class="text-28rpx text-gray-600">
           手续费(HSK)
         </text>
@@ -143,46 +141,48 @@
           {{ orderDetail.fee }}
         </text>
       </view>
-
-      <view class="flex items-center justify-between py-20rpx">
-        <text class="text-28rpx text-gray-600">
-          以点卡抵扣手续费
-        </text>
-        <text class="text-28rpx">
-          {{ orderDetail.fee_symboml }}
-        </text>
-      </view>
     </view>
 
     <!-- 成交记录 -->
     <view class="mt-20rpx bg-white">
       <view class="border-b border-gray-100 p-30rpx">
-        <text class="text-32rpx font-bold">
-          成交记录
+        <view class="flex items-center">
+          <view class="mr-16rpx h-32rpx w-8rpx rounded-4rpx bg-red-500" />
+          <text class="text-32rpx font-bold">
+            成交记录
+          </text>
+        </view>
+      </view>
+
+      <!-- 添加空状态显示 -->
+      <view v-if="!orderDetail.records || orderDetail.records.length === 0" class="flex flex-col items-center justify-center p-60rpx">
+        <u-icon name="info-circle" size="80" color="#dbdbdb" />
+        <text class="mt-20rpx text-28rpx text-gray-400">
+          暂无成交记录
         </text>
       </view>
 
-      <view v-for="(record, index) in tradeRecords" :key="index" class="border-b border-gray-50 p-30rpx">
+      <view v-for="(record, index) in orderDetail.records" :key="index" class="mb-20rpx bg-#f8f9fa p-30rpx last:mb-0">
         <view class="mb-20rpx flex items-center justify-between">
           <text class="text-28rpx text-gray-600">
             日期
           </text>
-          <text class="text-28rpx">
-            {{ record.date }}
+          <text class="max-w-400rpx truncate text-28rpx">
+            {{ record.create_at }}
           </text>
         </view>
 
-        <!-- <view class="mb-20rpx flex items-center justify-between">
+        <view class="mb-20rpx flex items-center justify-between">
           <text class="text-28rpx text-gray-600">
             角色/订单ID
           </text>
           <view class="flex items-center">
-            <text class="text-28rpx">
-              {{ record.role }}
+            <text class="max-w-350rpx truncate text-28rpx">
+              {{ orderDetail.make_type }}/{{ record.id || '' }}
             </text>
-            <u-icon name="info-circle" size="16" color="#999" class="ml-10rpx" />
+            <u-icon name="info-circle" size="14" color="#999999" class="ml-10rpx" />
           </view>
-        </view> -->
+        </view>
 
         <view class="mb-20rpx flex items-center justify-between">
           <text class="text-28rpx text-gray-600">
@@ -207,7 +207,7 @@
             成交额(USDT)
           </text>
           <text class="text-28rpx">
-            {{ record.total }}
+            {{ record.volume }}
           </text>
         </view>
 
@@ -221,7 +221,7 @@
         </view>
       </view>
     </view>
-  </view>
+  </c-container>
 </template>
 
 <script setup lang="ts">
@@ -229,35 +229,41 @@ import { getOrderDetail } from '@/api/list';
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
 
-interface OrderDetailInfo {
-  symbol: string;
-  order_side: 'BUY' | 'SELL';
-  make_type: 'MARKET' | 'LIMIT';
-  status: string;
-  price: string;
-  avg_price: string;
+// 根据接口定义订单详情接口
+interface OrderDetailItem {
   amount: string;
-  deal_amount: string;
   create_at: string;
-  update_at: string;
-  fee: string;
-  fee_symboml: string;
-  volume: string;
-  id: number;
-}
-
-interface TradeRecord {
-  date: string;
-  price: string;
-  amount: string;
-  total: string;
   fee: string;
   fee_symbol: string;
+  id: number;
+  make_type: string;
+  price: string;
+  volume: string;
+  [property: string]: any;
+}
+
+interface OrderDetailData {
+  amount: string;
+  avg_price: string;
+  create_at: string;
+  deal_amount: string;
+  fee: string;
+  fee_symbol: string;
+  make_type: string;
+  order_id: string;
+  order_side: string;
+  price: string;
+  records: OrderDetailItem[];
+  status: string;
+  symbol: string;
+  total: number;
+  update_at: string;
+  volume: string;
+  [property: string]: any;
 }
 
 // 获取路由参数
-const orderDetail = ref<OrderDetailInfo>({} as OrderDetailInfo);
-const tradeRecords = ref<TradeRecord[]>([]);
+const orderDetail = ref<OrderDetailData>({} as OrderDetailData);
 const orderId = ref<number>(0);
 
 onLoad((options) => {
@@ -297,38 +303,8 @@ async function fetchOrderDetail() {
     });
 
     if (res) {
-      // 设置订单基本信息
-      orderDetail.value = {
-        id: orderId.value,
-        symbol: res.symbol,
-        order_side: res.order_side as 'BUY' | 'SELL',
-        make_type: res.make_type as 'MARKET' | 'LIMIT',
-        status: res.status,
-        price: res.price,
-        avg_price: res.avg_price,
-        amount: res.amount,
-        deal_amount: res.deal_amount,
-        create_at: res.create_at,
-        update_at: res.update_at || res.create_at, // 如果没有更新时间则使用创建时间
-        fee: res.fee,
-        fee_symboml: res.fee_symbol,
-        volume: res.volume,
-      };
-
-      // 设置成交记录
-      if (res.records && Array.isArray(res.records)) {
-        tradeRecords.value = res.records.map(record => ({
-          date: record.create_at,
-          price: record.price,
-          amount: record.amount,
-          total: record.volume,
-          fee: record.fee,
-          fee_symbol: record.fee_symbol,
-        }));
-      }
-      else {
-        tradeRecords.value = [];
-      }
+      // 直接使用接口返回的数据结构
+      orderDetail.value = res;
     }
   }
   catch (error) {
@@ -340,27 +316,24 @@ async function fetchOrderDetail() {
   }
 }
 
-// 计算成交总额
-function calculateTotal() {
-  return orderDetail.value.volume || '0';
-}
-
 // 返回上一页
 function goBack() {
-  uni.navigateBack();
+  uni.switchTab({
+    url: '/pages/tab/list/index',
+  });
 }
 
 // 跳转到交易页面
 function goToTrade() {
   uni.switchTab({
-    url: '/pages/tab/trade/index',
+    url: '/pages/tab/home/index',
   });
 }
 
 // 复制订单ID
 function copyOrderId() {
   uni.setClipboardData({
-    data: orderId.value.toString(),
+    data: orderDetail.value.order_id.toString(),
     success: () => {
       uni.showToast({
         title: '复制成功',
@@ -371,7 +344,7 @@ function copyOrderId() {
 }
 
 // 获取订单状态样式
-function getStatusClass(status: string) {
+function _getStatusClass(status: string) {
   const statusMap: Record<string, string> = {
     MAKE_ORDER: 'bg-blue-50 text-blue-600',
     ORDER_ALL_CANCELED: 'bg-gray-50 text-gray-600',
@@ -383,7 +356,7 @@ function getStatusClass(status: string) {
 }
 
 // 获取订单状态文本
-function getStatusText(status: string) {
+function _getStatusText(status: string) {
   const statusMap: Record<string, string> = {
     MAKE_ORDER: '进行中',
     ORDER_ALL_CANCELED: '已取消',
