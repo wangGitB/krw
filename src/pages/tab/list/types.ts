@@ -6,6 +6,7 @@ export enum OrderStatus {
   ORDER_ALL_CANCELED = 'ORDER_ALL_CANCELED', // 已取消
   ORDER_PARTIALLY_CANCELED = 'ORDER_PARTIALLY_CANCELED', // 部分取消
   ORDER_FINISHED = 'ORDER_FINISHED', // 已完成
+  ORDER_COMMITTED = 'ORDER_COMMITTED', // 已成交
 }
 
 export interface OrderItem {
