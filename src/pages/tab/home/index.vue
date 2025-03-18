@@ -1,4 +1,6 @@
 <template>
+  <!-- 添加loading页面 -->
+  <u-loading-page :loading="isLoading" icon-size="36" loading-text="加载中..." loading-mode="semicircle" bg-color="rgba(255, 255, 255, 0.9)" />
   <!-- 顶部导航和币种选择 -->
   <c-header :show-back="false" has-background title="行情" class="relative z-10" />
   <!-- container -->
@@ -110,7 +112,7 @@
           <slider
             :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
             :active-color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
-            @change="handleSliderChange" @changing="handleSliderChanging"
+            @change="handleSliderChange" @changing="handleSliderChange"
           />
           <view class="mt-[10rpx] flex items-center justify-between">
             <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(0)">
@@ -150,12 +152,6 @@
             <text class="ml-[8rpx] text-[24rpx] text-[#333333]">
               {{ source_amount_display }} USDT
             </text>
-          </view>
-          <view
-            class="h-[34rpx] w-[34rpx] flex items-center justify-center rounded-[4rpx] bg-[#FAE4E6]"
-            @tap="handleAdd"
-          >
-            <u-icon name="plus" color="#E53935" size="20rpx" />
           </view>
         </view>
 
@@ -224,71 +220,91 @@
     </view>
     <!-- 委托 -->
     <view class="mt-[40rpx] h-1160rpx overflow-auto bg-white p-x-[28rpx] p-b-[28rpx]">
-      <view v-for="item in 3" :key="item" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
-        <view class="px-[28rpx]">
-          <view class="flex items-center justify-between">
-            <view class="flex items-center gap-[12rpx]">
-              <text class="text-[32rpx] text-[#333] font-bold">
-                IP/USDT
-              </text>
-              <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-                <text class="text-[24rpx] text-[#E6302F]">
-                  买入
-                </text>
+      <z-paging
+        ref="paging" v-model="orderList" :auto="true" :refresher-enabled="true" :show-scrollbar="false"
+        language="zh-cn" empty-view-text="暂无委托订单" :loading-more-enabled="true" :auto-scroll-to-top-when-reload="true"
+        :fixed="false" loading-more-no-more-text="没有更多数据了" no-more-data-text="没有更多数据了"
+        loading-more-loading-text="加载中..." loading-more-failed-text="加载失败，点击重试" refresher-default-text="下拉刷新"
+        refresher-pulling-text="松开刷新" refresher-refreshing-text="刷新中..." @query="queryOrderList"
+      >
+        <template #default>
+          <view v-for="(item, index) in orderList" :key="index" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
+            <view>
+              <view class="flex items-center justify-between">
+                <view class="flex items-center gap-[12rpx]">
+                  <text class="text-[32rpx] text-[#333] font-bold">
+                    {{ item.symbol }}
+                  </text>
+                  <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                    <text class="text-[24rpx] text-[#E6302F]">
+                      {{ item.order_side === 'BUY' ? '买入' : '卖出' }}
+                    </text>
+                  </view>
+                  <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                    <text class="text-[24rpx] text-[#F7B966]">
+                      {{ item.make_type === 'LIMIT' ? '限价' : '市价' }}
+                    </text>
+                  </view>
+                </view>
+                <view class="text-[28rpx] text-[#999] font-500">
+                  {{ formatDate(item.create_at) }}
+                </view>
               </view>
-              <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-                <text class="text-[24rpx] text-[#F7B966]">
-                  限价
-                </text>
+            </view>
+            <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+              <view class="flex flex-col items-center justify-center">
+                <view class="price-display text-[44rpx] text-[#333] font-bold">
+                  {{ item.price }}
+                </view>
+                <view class="text-[24rpx] text-[#666]">
+                  委托价格(USDT)
+                </view>
+              </view>
+
+              <view class="flex flex-col items-center justify-center">
+                <view class="price-display text-[44rpx] text-[#333] font-bold">
+                  {{ item.amount }}
+                </view>
+                <view class="text-[24rpx] text-[#666]">
+                  委托数量(IP)
+                </view>
+              </view>
+              <view class="flex flex-col items-center justify-center">
+                <view class="price-display text-[44rpx] text-[#333] font-bold">
+                  {{ item.volume }}
+                </view>
+                <view class="text-[24rpx] text-[#666]">
+                  交易额(USDT)
+                </view>
               </view>
             </view>
-            <view class="text-[28rpx] text-[#999] font-500">
-              2025-02-28 16:26:22
-            </view>
-          </view>
-        </view>
-        <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-          <view class="flex flex-col items-center justify-center">
-            <view class="text-[44rpx] text-[#333] font-bold">
-              0.46988
-            </view>
-            <view class="text-[24rpx] text-[#666]">
-              委托价格(USDT)
-            </view>
-          </view>
 
-          <view class="flex flex-col items-center justify-center">
-            <view class="text-[44rpx] text-[#333] font-bold">
-              3
-            </view>
-            <view class="text-[24rpx] text-[#666]">
-              委托数量(IP)
-            </view>
-          </view>
-          <view class="flex flex-col items-center justify-center">
-            <view class="text-[44rpx] text-[#333] font-bold">
-              1.40964
-            </view>
-            <view class="text-[24rpx] text-[#666]">
-              交易额(USDT)
-            </view>
-          </view>
-        </view>
-
-        <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-          <view class="flex flex-col items-center justify-center">
-            <view class="text-[44rpx] text-[#E6302F] font-bold">
-              2
-            </view>
-            <view class="text-[24rpx] text-[#999]">
-              已成交(IP)
+            <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+              <view class="flex flex-col items-center justify-center">
+                <view class="price-display text-[44rpx] text-[#E6302F] font-bold">
+                  {{ item.deal_amount }}
+                </view>
+                <view class="text-[24rpx] text-[#999]">
+                  已成交(IP)
+                </view>
+              </view>
+              <view
+                v-if="item.status === 'ORDER_COMMITED'"
+                class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold"
+                @click="cancelOrder(item.order_id)"
+              >
+                撤销
+              </view>
+              <view
+                v-else-if="['INIT', 'MAKE_ORDER', 'ORDER_CANCELING'].includes(item.status)"
+                class="rounded-[8rpx] bg-[#EFEFEF] p-x-[68rpx] p-y-[16rpx] text-[#999999] font-bold"
+              >
+                处理中
+              </view>
             </view>
           </view>
-          <view class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold">
-            撤销
-          </view>
-        </view>
-      </view>
+        </template>
+      </z-paging>
     </view>
 
     <!-- 币种选择弹出层 -->
@@ -434,8 +450,7 @@
       <view class="h-[90rpx] p-x-[28rpx] p-y-[20rpx]">
         <view
           class="h-full flex items-center justify-center rounded-full text-[30rpx] text-white"
-          :style="{ background: activeTab === 'BUY' ? '#E6302F' : '#00B069' }"
-          @click="submitOrder"
+          :style="{ background: activeTab === 'BUY' ? '#E6302F' : '#00B069' }" @click="submitOrder"
         >
           确认
         </view>
@@ -444,11 +459,7 @@
 
     <!-- 修改密码输入弹窗，使用 u-code-input 组件 -->
     <u-popup
-      :show="showPasswordPopup"
-      mode="bottom"
-      :mask="true"
-      :safe-area-inset-bottom="true"
-      round="20"
+      :show="showPasswordPopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
       @close="showPasswordPopup = false"
     >
       <view class="p-[28rpx]">
@@ -467,15 +478,8 @@
         <view class="code-container mt-[40rpx] w-full flex justify-center">
           <!-- 使用 u-code-input 组件 -->
           <u-code-input
-            v-model="tradePassword"
-            :maxlength="6"
-            :dot="false"
-            mode="box"
-            :space="10"
-            font-size="24px"
-            class="verification-code-input mb-[20rpx] w-full"
-            :size="boxSize"
-            @finish="handleConfirmPassword"
+            v-model="tradePassword" :maxlength="6" :dot="false" mode="box" :space="10" font-size="24px"
+            class="verification-code-input mb-[20rpx] w-full" :size="boxSize"
           />
         </view>
 
@@ -494,7 +498,8 @@
 
 <script setup lang="ts">
 import type { SymbolInfosRes } from '@/api/home';
-import { getSymbolInfos, getSymbolSetting, newOrder } from '@/api/home';
+import { CancelOrder, getSymbolInfos, getSymbolSetting, newOrder, VerifyTradePwd } from '@/api/home';
+import { getOrderList } from '@/api/list';
 import icon_right from '@/static/images/home/back_icon.png';
 import background_banner from '@/static/images/home/background_banner.png';
 import home_icon1 from '@/static/images/home/home_icon1.png';
@@ -503,9 +508,13 @@ import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
 import { getGoogleToken } from '@/utils';
+import storage from '@/utils/storage';
 import WebSocketService from '@/utils/ws';
 // WebSocketService
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+
+// 添加页面加载状态
+const isLoading = ref(true);
 
 // 添加当前价格的响应式引用
 const currentPrice = ref(0);
@@ -614,10 +623,10 @@ const handleSliderChange = (e: any) => {
   updateTradeInfo();
 };
 
-const handleSliderChanging = (e: any) => {
-  sliderValue.value = e.detail.value;
-  updateTradeInfo();
-};
+// const handleSliderChanging = (e: any) => {
+//   sliderValue.value = e.detail.value;
+//   updateTradeInfo();
+// };
 
 // 快速选择百分比
 const selectPercentage = (percentage: number) => {
@@ -625,8 +634,99 @@ const selectPercentage = (percentage: number) => {
   updateTradeInfo();
 };
 
-const handleAdd = () => {
-  // 可以添加充值或其他操作
+// const handleAdd = () => {
+//   // 可以添加充值或其他操作
+// };
+// 委托订单列表
+const orderList = ref<any[]>([]);
+// 添加分页相关变量
+const paging = ref<any>(null);
+
+// 格式化日期
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 获取委托订单列表 - 分页查询
+const queryOrderList = async (pageNo: number, pageSizeParam: number) => {
+  try {
+    const res = await getOrderList({
+      status: 0,
+      pageSize: pageSizeParam,
+      current: pageNo,
+    });
+
+    if (res && res.records) {
+      // 过滤掉不需要显示的订单状态
+      const filteredList = res.records.filter(item =>
+        !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
+      );
+
+      // 通知z-paging加载完成
+      if (paging.value) {
+        paging.value.complete(filteredList);
+      }
+
+      // 如果没有更多数据，通知z-paging
+      if (filteredList.length < pageSizeParam || (res as any).current >= (res as any).pages) {
+        paging.value.complete(filteredList);
+      }
+    }
+    else {
+      // 如果没有数据，通知z-paging加载完成，无更多数据
+      if (paging.value) {
+        paging.value.complete([]);
+      }
+    }
+  }
+  catch (error) {
+    console.error('获取委托订单列表失败:', error);
+    // 通知z-paging加载失败
+    if (paging.value) {
+      paging.value.complete(false);
+    }
+    uni.showToast({
+      title: '获取订单列表失败',
+      icon: 'none',
+    });
+  }
+};
+
+// 刷新委托订单列表
+const fetchOrderList = async () => {
+  if (paging.value) {
+    paging.value.reload();
+  }
+  else {
+    // 兼容旧逻辑
+    try {
+      const res = await getOrderList({
+        status: 0, // 已完成的订单
+        pageSize: 10,
+        current: 1,
+      });
+
+      if (res && res.records) {
+        // 过滤掉不需要显示的订单状态
+        orderList.value = res.records.filter(item => !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status));
+      }
+    }
+    catch (error) {
+      console.error('获取委托订单列表失败:', error);
+      uni.showToast({
+        title: '获取订单列表失败',
+        icon: 'none',
+      });
+    }
+  }
 };
 
 const token = getGoogleToken();
@@ -699,6 +799,21 @@ wsService.onMessage((message) => {
   if (message.T === 'D') {
     currentPrice.value = message.price;
   }
+  if (message.T === 'O') {
+    console.log('订单更新消息:', message);
+    // 查找并更新订单列表中对应的订单
+    const orderIndex = orderList.value.findIndex(item => item.order_id === message.ID);
+    if (orderIndex !== -1) {
+      // 更新订单状态和成交数量
+      orderList.value[orderIndex].status = message.S;
+      orderList.value[orderIndex].deal_amount = message.D;
+
+      // 如果订单状态变为已完成或已取消，可以刷新订单列表
+      if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
+        fetchOrderList();
+      }
+    }
+  }
 });
 
 // 币种选择相关数据
@@ -717,7 +832,7 @@ const getSymbolId = (item: any): string => {
 
 // 选择交易对
 const selectSymbol = (item: SymbolInfosRes): void => {
-  selectedSymbol.value = `${item.source_name}/${item.target_name}`;
+  selectedSymbol.value = `${item.target_name}/${item.source_name}`;
   selectedUniqueSymbolId.value = getSymbolId(item);
   selectedSymbolId.value = item.target_id;
   selectedExchangeId.value = item.exchange_id;
@@ -757,10 +872,64 @@ const fetchSymbolSetting = async (): Promise<void> => {
   // 更新交易信息
   updateTradeInfo();
 };
-const initData = async () => {
-  await fetchSymbolList();
-  await fetchSymbolSetting();
+
+// 撤销订单
+const cancelOrder = (orderId: number) => {
+  // 显示确认弹窗
+  uni.showModal({
+    title: '温馨提示',
+    content: '确定要撤销此订单吗？',
+    confirmColor: '#E6302F',
+    confirmText: '确认',
+    cancelText: '取消',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          uni.showLoading({
+            title: '处理中...',
+          });
+          // 调用撤销订单接口
+          await CancelOrder({ order_id: orderId });
+          uni.showToast({
+            title: '撤销成功',
+            icon: 'success',
+          });
+          // 刷新订单列表
+          await fetchOrderList();
+        }
+        catch (error: any) {
+          uni.showToast({
+            title: error.message || '撤销失败',
+            icon: 'none',
+          });
+        }
+        finally {
+          uni.hideLoading();
+        }
+      }
+    },
+  });
 };
+
+const initData = async () => {
+  isLoading.value = true; // 开始加载数据时显示loading
+  try {
+    await fetchSymbolList();
+    await fetchSymbolSetting();
+    await fetchOrderList(); // 添加获取委托订单列表
+  }
+  catch (error) {
+    console.error('初始化数据失败:', error);
+    uni.showToast({
+      title: '加载数据失败，请重试',
+      icon: 'none',
+    });
+  }
+  finally {
+    isLoading.value = false; // 数据加载完成后隐藏loading
+  }
+};
+
 // 添加验证码输入框大小计算
 const boxSize = ref(0);
 // 页面加载时获取交易对列表
@@ -845,6 +1014,7 @@ const tradePassword = ref('');
 // 修改 submitOrder 函数
 const submitOrder = async () => {
   try {
+    isLoading.value = true; // 提交订单时显示loading
     uni.showLoading({
       title: '提交中...',
     });
@@ -877,10 +1047,10 @@ const submitOrder = async () => {
 
     // 重置交易数量
     sliderValue.value = 0;
-    updateTradeInfo();
 
-    // 刷新交易对设置
+    // 刷新交易对设置和订单列表
     await fetchSymbolSetting();
+    await fetchOrderList(); // 下单成功后刷新订单列表
   }
   catch (error: any) {
     if (error.code === 3000) {
@@ -907,6 +1077,7 @@ const submitOrder = async () => {
     }
   }
   finally {
+    isLoading.value = false; // 无论提交成功或失败，都隐藏loading
     uni.hideLoading();
   }
 };
@@ -914,43 +1085,25 @@ const submitOrder = async () => {
 // 添加确认密码的处理函数
 const handleConfirmPassword = async () => {
   try {
+    isLoading.value = true; // 验证密码时显示loading
     uni.showLoading({
       title: '提交中...',
     });
-
-    // 准备请求参数
-    const orderData = {
-      amount: tradeAmount.value,
-      make_type: makeType.value,
-      order_side: activeTab.value,
-      price: buyOrSellPrice.value,
-      sourceId: selectedSourceId.value!,
-      symbol_id: selectedSymbolId.value!,
-      t: Date.now(),
-      sign: '',
-      trade_password: tradePassword.value, // 添加交易密码
-    };
-
-    // 调用下单接口
-    await newOrder(orderData);
+    const res = await VerifyTradePwd({ trade_pwd: tradePassword.value });
 
     // 关闭密码弹窗和确认弹窗
     showPasswordPopup.value = false;
     showOrderConfirm.value = false;
     tradePassword.value = ''; // 清空密码
 
-    // 显示成功提示
-    uni.showToast({
-      title: '下单成功',
-      icon: 'success',
-    });
-
     // 重置交易数量
     sliderValue.value = 0;
-    updateTradeInfo();
-
-    // 刷新交易对设置
-    await fetchSymbolSetting();
+    uni.showToast({
+      title: '验证成功',
+      icon: 'none',
+    });
+    storage.set('verify_trade_pwd_token', res.token);
+    storage.set('verify_trade_pwd_trade_status_expired', res.trade_status_expired.toString());
   }
   catch (error: any) {
     uni.showToast({
@@ -959,6 +1112,7 @@ const handleConfirmPassword = async () => {
     });
   }
   finally {
+    isLoading.value = false; // 无论验证成功或失败，都隐藏loading
     uni.hideLoading();
   }
 };
@@ -982,8 +1136,18 @@ const handleConfirmPassword = async () => {
   transition: color 0.1s ease-in-out;
 }
 
+/* 价格显示样式 */
+.price-display {
+  max-width: 200rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
 .verification-code-input {
-/* stylelint-disable selector-class-pattern */
+
+  /* stylelint-disable selector-class-pattern */
   :deep(.u-code-input__item) {
     // height: 80rpx !important; // 减小输入框高度
     // line-height: 80rpx !important; // 调整内部文字垂直居中

@@ -114,3 +114,23 @@ export interface NewOrderRes {
 }
 
 export const newOrder = (data: NewOrderReq) => post<NewOrderRes>('/order/new', { data });
+
+export interface VerifyTradePwdReq {
+  /**
+   * 交易密码
+   */
+  trade_pwd: string;
+}
+export interface VerifyTradePwdRes {
+  token: 'string';
+  trade_status_expired: 0;
+  role: 'string';
+}
+
+export const VerifyTradePwd = (data: VerifyTradePwdReq) => post<VerifyTradePwdRes>('/verify/trade_pwd', { data });
+
+export interface CancelOrderReq {
+  order_id: number;
+}
+
+export const CancelOrder = (data: CancelOrderReq) => post('/order/cancel', { data });

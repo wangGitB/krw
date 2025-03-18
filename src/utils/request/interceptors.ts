@@ -82,11 +82,12 @@ function requestInterceptors(http: HttpRequestAbstract) {
 
       // 是否需要设置 token
       const isToken = custom?.auth === false;
-      if ((getToken() || getGoogleToken()) && !isToken && config.header) {
+      const verifyTradePwdToken = storage.get('verify_trade_pwd_token');
+      if ((getToken() || getGoogleToken() || verifyTradePwdToken) && !isToken && config.header) {
         // token设置 - 从local中获取admin-token并添加到headers的Authorization中
         const googleToken = getGoogleToken();
         const token = getToken();
-        const _token = googleToken || token;
+        const _token = verifyTradePwdToken || googleToken || token;
         config.header.Authorization = `Bearer ${_token}`;
       }
 
