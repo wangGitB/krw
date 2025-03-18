@@ -291,7 +291,7 @@
               <view
                 v-if="item.status === 'ORDER_COMMITED'"
                 class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold"
-                @click="cancelOrder(item.order_id)"
+                @click="cancelOrder(item.id)"
               >
                 撤销
               </view>
@@ -507,7 +507,7 @@ import home_icon2 from '@/static/images/home/home_icon2.png';
 import home_icon3 from '@/static/images/home/home_icon3.png';
 import home_icon4 from '@/static/images/home/home_icon4.png';
 import home_icon5 from '@/static/images/home/home_icon5.png';
-import { getGoogleToken } from '@/utils';
+import { getGoogleToken, getToken } from '@/utils';
 import storage from '@/utils/storage';
 import WebSocketService from '@/utils/ws';
 // WebSocketService
@@ -732,10 +732,6 @@ const fetchOrderList = async () => {
 const token = getGoogleToken();
 const WSURL = import.meta.env.VITE_WS_URL;
 
-const wsService = new WebSocketService(`${WSURL}/wss?Authorization=${token}`);
-// 建立连接
-wsService.connect();
-
 // 初始化行情数据
 const home_icon_list = ref([
   {
@@ -751,70 +747,6 @@ const home_icon_list = ref([
     text: '0.00', // TM - 24小时最高价
   },
 ]);
-
-// 监听消息
-wsService.onMessage((message) => {
-  // 处理价格行情数据
-  if (message.T === 'B') {
-    // 更新行情数据 - BP(买入价格)、TP(卖出价格)、TM(24小时最高价)
-    if (message.BP) {
-      home_icon_list.value[0].text = message.BP.toLocaleString();
-    }
-
-    if (message.TP) {
-      home_icon_list.value[1].text = message.TP.toLocaleString();
-    }
-
-    if (message.TM) {
-      home_icon_list.value[2].text = message.TM.toLocaleString();
-    }
-  }
-
-  if (message.T === 'P') {
-    // 处理深度数据
-    if (message.A && message.B) {
-      // A是买单列表，需要反转
-      buyOrders.value = [...message.A].reverse().map(item => ({
-        price: item.P,
-        amount: item.V,
-      }));
-
-      // B是卖单列表，需要反转
-      sellOrders.value = [...message.B].reverse().map(item => ({
-        price: item.P,
-        amount: item.V,
-      }));
-
-      if (activeTab.value === 'BUY') {
-        buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
-      }
-      else if (activeTab.value === 'SELL') {
-        buyOrSellPrice.value = sellOrders.value[0].price;
-      }
-
-      // 价格变化时更新交易信息
-      updateTradeInfo();
-    }
-  }
-  if (message.T === 'D') {
-    currentPrice.value = message.price;
-  }
-  if (message.T === 'O') {
-    console.log('订单更新消息:', message);
-    // 查找并更新订单列表中对应的订单
-    const orderIndex = orderList.value.findIndex(item => item.order_id === message.ID);
-    if (orderIndex !== -1) {
-      // 更新订单状态和成交数量
-      orderList.value[orderIndex].status = message.S;
-      orderList.value[orderIndex].deal_amount = message.D;
-
-      // 如果订单状态变为已完成或已取消，可以刷新订单列表
-      if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
-        fetchOrderList();
-      }
-    }
-  }
-});
 
 // 币种选择相关数据
 const showSymbolPicker = ref(false);
@@ -966,6 +898,7 @@ const initData = async () => {
 
 // 添加验证码输入框大小计算
 const boxSize = ref(0);
+const wsService = new WebSocketService(`${WSURL}/wss?Authorization=${token}`);
 // 页面加载时获取交易对列表
 onMounted(async () => {
   // 添加全局点击事件监听
@@ -977,9 +910,77 @@ onMounted(async () => {
 
   // 初始化数据
   await initData();
-  if (selectedExchangeId.value && selectedSymbolId.value && selectedSourceId.value) {
-    // 订阅价格变化
-    wsService.subscribe('P', selectedExchangeId.value, selectedSymbolId.value, selectedSourceId.value);
+  if (getToken()) {
+    // 建立连接
+    wsService.connect();
+
+    // 监听消息
+    wsService.onMessage((message) => {
+      // 处理价格行情数据
+      if (message.T === 'B') {
+        // 更新行情数据 - BP(买入价格)、TP(卖出价格)、TM(24小时最高价)
+        if (message.BP) {
+          home_icon_list.value[0].text = message.BP.toLocaleString();
+        }
+
+        if (message.TP) {
+          home_icon_list.value[1].text = message.TP.toLocaleString();
+        }
+
+        if (message.TM) {
+          home_icon_list.value[2].text = message.TM.toLocaleString();
+        }
+      }
+
+      if (message.T === 'P') {
+        // 处理深度数据
+        if (message.A && message.B) {
+          // A是买单列表，需要反转
+          buyOrders.value = [...message.A].reverse().map(item => ({
+            price: item.P,
+            amount: item.V,
+          }));
+
+          // B是卖单列表，需要反转
+          sellOrders.value = [...message.B].reverse().map(item => ({
+            price: item.P,
+            amount: item.V,
+          }));
+
+          if (activeTab.value === 'BUY') {
+            buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
+          }
+          else if (activeTab.value === 'SELL') {
+            buyOrSellPrice.value = sellOrders.value[0].price;
+          }
+
+          // 价格变化时更新交易信息
+          updateTradeInfo();
+        }
+      }
+      if (message.T === 'D') {
+        currentPrice.value = message.price;
+      }
+      if (message.T === 'O') {
+        console.log('订单更新消息:', message);
+        // 查找并更新订单列表中对应的订单
+        const orderIndex = orderList.value.findIndex(item => item.order_id === message.ID);
+        if (orderIndex !== -1) {
+          // 更新订单状态和成交数量
+          orderList.value[orderIndex].status = message.S;
+          orderList.value[orderIndex].deal_amount = message.D;
+
+          // 如果订单状态变为已完成或已取消，可以刷新订单列表
+          if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
+            fetchOrderList();
+          }
+        }
+      }
+    });
+    if (selectedExchangeId.value && selectedSymbolId.value && selectedSourceId.value) {
+      // 订阅价格变化
+      wsService.subscribe('P', selectedExchangeId.value, selectedSymbolId.value, selectedSourceId.value);
+    }
   }
 });
 
@@ -1173,10 +1174,10 @@ const handleConfirmPassword = async () => {
 /* 价格显示样式 */
 .price-display {
   max-width: 200rpx;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .verification-code-input {

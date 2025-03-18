@@ -56,4 +56,16 @@ function checkLoginStatus() {
 /* 每个页面公共css */
 @import 'uview-plus/index.scss';
 @import '@/static/styles/common.scss';
+
+@font-face {
+  font-family: 'PingFang Medium';
+  font-style: normal;
+  font-weight: normal;
+  src: url('@/static/fonts/PingFang Medium_downcc.otf') format('opentype');
+  font-display: swap;
+}
+
+* {
+  font-family: 'PingFang Medium', sans-serif;
+}
 </style>
