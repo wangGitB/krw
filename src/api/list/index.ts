@@ -34,7 +34,7 @@ export interface OrderListReq {
   [property: string]: any;
 }
 
-interface OrderListRes {
+export interface OrderListRes {
   records: [
     {
       id: 0;
@@ -62,7 +62,6 @@ export interface OrderDetailReq {
   current?: number;
   order_id: number;
   pageSize?: number;
-  [property: string]: any;
 }
 
 interface OrderDetailRes {

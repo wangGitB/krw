@@ -9,13 +9,21 @@
       class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
       :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
     />
-    <scroll-view
-      scroll-y
-      class="main-scroll-view"
-      refresher-enabled
-      :refresher-triggered="isRefreshing"
-      @scrolltolower="loadMore"
-      @refresherrefresh="onRefresh"
+    <z-paging
+      ref="pagingRef"
+      v-model="orderList"
+      :auto-height="true"
+      language="zh-cn"
+      empty-view-text="暂无数据"
+      loading-more-no-more-text="没有更多数据了"
+      no-more-data-text="没有更多数据了"
+      loading-more-loading-text="加载中..."
+      loading-more-failed-text="加载失败，点击重试"
+      refresher-default-text="下拉刷新"
+      refresher-pulling-text="松开刷新"
+      refresher-refreshing-text="刷新中..."
+      class="bg-white"
+      @query="queryOrderList"
     >
       <!-- 整体内容 -->
       <view>
@@ -529,12 +537,13 @@
           </view>
         </view>
       </u-popup>
-    </scroll-view>
+    </z-paging>
   </c-container>
 </template>
 
 <script setup lang="ts">
 import type { SymbolInfosRes } from '@/api/home';
+import type { OrderListRes } from '@/api/list';
 import { CancelOrder, getSymbolInfos, getSymbolSetting, newOrder, VerifyTradePwd } from '@/api/home';
 import { getOrderList } from '@/api/list';
 import icon_right from '@/static/images/home/back_icon.png';
@@ -547,13 +556,12 @@ import home_icon5 from '@/static/images/home/home_icon5.png';
 import { getGoogleToken, getToken } from '@/utils';
 import storage from '@/utils/storage';
 import WebSocketService from '@/utils/ws';
-// WebSocketService
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 // 添加页面加载状态
 const isLoading = ref(true);
-const isRefreshing = ref(false);
 
+const pagingRef = ref<InstanceType<typeof zPaging> | null>(null);
 // 添加当前价格的响应式引用
 const currentPrice = ref(0);
 // 源币数量和名称
@@ -731,43 +739,38 @@ const toggleTooltip = (e: Event) => {
 // 委托订单列表
 const orderList = ref<any[]>([]);
 
-// 添加分页相关变量
-const currentPage = ref(1);
-const pageSize = ref(10);
 const hasMore = ref(true);
 
 // 获取委托订单列表
-const queryOrderList = async (page: number, size: number) => {
-  if (!getToken()) return;
+const queryOrderList = async (pageNo: number, pageSize: number) => {
+  if (!getToken()) {
+    pagingRef.value?.complete([]);
+    return;
+  }
 
   try {
     const res = await getOrderList({
       status: 0,
-      pageSize: size,
-      current: page,
+      pageSize,
+      current: pageNo,
     });
 
-    if (res && res.records) {
+    if (res?.records) {
       // 过滤掉不需要显示的订单状态
       const filteredList = res.records.filter(item =>
         !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
       );
 
-      // 判断是否还有更多数据 - 修改判断逻辑
-      hasMore.value = page * size < res.total;
-
-      // 如果是第一页,直接替换数据
-      if (page === 1) {
-        orderList.value = filteredList;
-      }
-      else {
-        // 否则追加数据
-        orderList.value = [...orderList.value, ...filteredList];
-      }
+      // 使用 z-paging 的 complete 方法处理数据
+      pagingRef.value?.complete(filteredList);
+    }
+    else {
+      pagingRef.value?.complete([]);
     }
   }
   catch (error) {
     console.error('获取委托订单列表失败:', error);
+    pagingRef.value?.complete(false);
     uni.showToast({
       title: '获取订单列表失败',
       icon: 'none',
@@ -777,8 +780,7 @@ const queryOrderList = async (page: number, size: number) => {
 
 // 修改刷新委托订单列表函数
 const fetchOrderList = async () => {
-  currentPage.value = 1;
-  await queryOrderList(1, pageSize.value);
+  pagingRef.value?.reload();
 };
 
 const token = getGoogleToken();
@@ -919,43 +921,6 @@ const cancelOrder = (orderId: number) => {
       }
     },
   });
-};
-
-// 加载更多
-const loadMore = async () => {
-  // 修改判断条件
-  if (!hasMore.value) {
-    return;
-  }
-  try {
-    currentPage.value++;
-    await queryOrderList(currentPage.value, pageSize.value);
-  }
-  catch (error) {
-    console.error('加载更多失败:', error);
-  }
-};
-
-// 刷新
-const onRefresh = async () => {
-  isRefreshing.value = true;
-  try {
-    // 重置页码
-    currentPage.value = 1;
-    // 重新获取所有数据
-    // eslint-disable-next-line ts/no-use-before-define
-    await initData();
-  }
-  catch (error) {
-    console.error('刷新失败:', error);
-    uni.showToast({
-      title: '刷新失败',
-      icon: 'none',
-    });
-  }
-  finally {
-    isRefreshing.value = false;
-  }
 };
 
 // 修改初始化数据函数
