@@ -1,5 +1,5 @@
 <template>
-  <view class="mt-[-80rpx] overflow-y-auto py-[88rpx]">
+  <view class="h-full">
     <slot />
   </view>
 </template>

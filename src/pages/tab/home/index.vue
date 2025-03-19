@@ -4,315 +4,341 @@
   <!-- 顶部导航和币种选择 -->
   <c-header :show-back="false" has-background title="行情" class="relative z-10" />
   <!-- container -->
-  <c-container>
-    <view
-      class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
-      :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
-    />
-    <!-- 币种选择器 -->
-    <view class="mb-[20rpx] mt-[24rpx] p-l-[28rpx] p-r-[18rpx]">
+  <c-container class="main-container">
+    <scroll-view
+      scroll-y
+      class="main-scroll-view"
+      refresher-enabled
+      :refresher-triggered="isRefreshing"
+      @scrolltolower="loadMore"
+      @refresherrefresh="onRefresh"
+    >
       <view
-        class="relative h-[108rpx] flex items-center justify-between overflow-hidden rounded-[10rpx] p-x-[20rpx] shadow-md"
-      >
-        <!-- 背景渐变层 -->
-        <view class="absolute inset-0 z-0" style="background: linear-gradient(to right, #FFF5EC, #FFF3E9)" />
-
-        <!-- 内容层 -->
-        <view class="relative z-1 w-full flex items-center justify-between" @click="handleCurrency">
-          <text class="text-[32rpx] text-[#333]">
-            {{ selectedSymbol }}
-          </text>
-          <view class="flex items-center">
-            <image :src="icon_right" class="h-[48rpx] w-[48rpx]" />
-          </view>
-        </view>
-      </view>
-    </view>
-    <view class="relative z-10">
-      <view class="flex items-center justify-between overflow-hidden bg-white py-[28rpx] p-l-[28rpx] p-r-[18rpx]">
-        <view class="w-full flex items-center rounded-md bg-#F8F9FA p-x-[28rpx] p-y-[18rpx]">
-          <view
-            v-for="(item, index) in home_icon_list" :key="index"
-            class="relative w-full flex items-center gap-[14rpx] text-[32rpx] text-[#333]"
-          >
-            <img class="mr-[14rpx] h-[48rpx] w-[48rpx]" :src="item.icon" alt="" srcset="">
-            <text>{{ item.text }}</text>
-          </view>
-        </view>
-      </view>
-    </view>
-    <c-line />
-    <!-- 买入和卖出 Button -->
-    <view class="flex items-start justify-between bg-white py-[30rpx]">
-      <!-- 左侧内容 -->
-      <view class="w-[424rpx] flex flex-col px-[28rpx]">
-        <!-- 买入卖出按钮 -->
-        <view class="mb-[24rpx] flex">
-          <u-button
-            class="flex-1" :color="activeTab === 'BUY' ? '#E53935' : '#FFE4E1'" text="买入"
-            :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'BUY' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
-            @click="handleBuy"
-          />
-          <u-button
-            class="flex-1" :color="activeTab === 'SELL' ? '#4CAF50' : '#FFE4E1'" text="卖出"
-            :custom-style="{ borderRadius: '0 8rpx 8rpx 0', width: '212rpx', height: '64rpx', color: activeTab === 'SELL' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
-            @click="handleSell"
-          />
-        </view>
-
-        <!-- 限单价 -->
+        class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
+        :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
+      />
+      <!-- 币种选择器 -->
+      <view class="mb-[20rpx] mt-[24rpx] p-l-[28rpx] p-r-[18rpx]">
         <view
-          class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]"
-          @click="showMakeTypePopup = true"
+          class="relative h-[108rpx] flex items-center justify-between overflow-hidden rounded-[10rpx] p-x-[20rpx] shadow-md"
         >
-          <view class="relative flex items-center gap-[14rpx]">
-            <image :src="home_icon4" class="h-[48rpx] w-[48rpx]" @tap.stop="toggleTooltip" />
-            <!-- 添加 tooltip -->
-            <view
-              v-if="showTooltip"
-              class="absolute bottom-[60rpx] left-0 z-10 w-[300rpx] rounded-[8rpx] bg-[#2C2C2C] p-[20rpx] shadow-lg transition-all duration-300 ease-in-out"
-              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop
-            >
-              <text class="text-[24rpx] text-[#E6E6E6]">
-                {{ makeType === 'LIMIT' ? '限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。' : '市价委托是指以当前市场最优价格立即成交的委托方式。' }}
-              </text>
-              <view
-                class="absolute bottom-[-8rpx] left-[20rpx] h-0 w-0 border-l-[8rpx] border-r-[8rpx] border-t-[8rpx] border-l-transparent border-r-transparent border-t-[#2C2C2C]"
-              />
+          <!-- 背景渐变层 -->
+          <view class="absolute inset-0 z-0" style="background: linear-gradient(to right, #FFF5EC, #FFF3E9)" />
+
+          <!-- 内容层 -->
+          <view class="relative z-1 w-full flex items-center justify-between" @click="handleCurrency">
+            <text class="text-[32rpx] text-[#333]">
+              {{ selectedSymbol }}
+            </text>
+            <view class="flex items-center">
+              <image :src="icon_right" class="h-[48rpx] w-[48rpx]" />
             </view>
-            <text class="text-[32rpx] text-[#333] font-bold">
-              {{ makeType === 'LIMIT' ? '限单价' : '市价' }}
+          </view>
+        </view>
+      </view>
+      <view class="relative z-10">
+        <view class="flex items-center justify-between overflow-hidden bg-white py-[28rpx] p-l-[28rpx] p-r-[18rpx]">
+          <view class="w-full flex items-center rounded-md bg-#F8F9FA p-x-[28rpx] p-y-[18rpx]">
+            <view
+              v-for="(item, index) in home_icon_list" :key="index"
+              class="relative w-full flex items-center gap-[14rpx] text-[32rpx] text-[#333]"
+            >
+              <img class="mr-[14rpx] h-[48rpx] w-[48rpx]" :src="item.icon" alt="" srcset="">
+              <text>{{ item.text }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      <c-line />
+      <!-- 买入和卖出 Button -->
+      <view class="flex items-start justify-between bg-white py-[30rpx]">
+        <!-- 左侧内容 -->
+        <view class="w-[424rpx] flex flex-col px-[28rpx]">
+          <!-- 买入卖出按钮 -->
+          <view class="mb-[24rpx] flex">
+            <u-button
+              class="flex-1" :color="activeTab === 'BUY' ? '#E53935' : '#FFE4E1'" text="买入"
+              :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'BUY' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
+              @click="handleBuy"
+            />
+            <u-button
+              class="flex-1" :color="activeTab === 'SELL' ? '#4CAF50' : '#FFE4E1'" text="卖出"
+              :custom-style="{ borderRadius: '0 8rpx 8rpx 0', width: '212rpx', height: '64rpx', color: activeTab === 'SELL' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
+              @click="handleSell"
+            />
+          </view>
+
+          <!-- 限单价 -->
+          <view
+            class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]"
+            @click="showMakeTypePopup = true"
+          >
+            <view class="relative flex items-center gap-[14rpx]">
+              <image :src="home_icon4" class="h-[48rpx] w-[48rpx]" @tap.stop="toggleTooltip" />
+              <!-- 添加 tooltip -->
+              <view
+                v-if="showTooltip"
+                class="absolute bottom-[60rpx] left-0 z-10 w-[300rpx] rounded-[8rpx] bg-[#2C2C2C] p-[20rpx] shadow-lg transition-all duration-300 ease-in-out"
+                :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop
+              >
+                <text class="text-[24rpx] text-[#E6E6E6]">
+                  {{ makeType === 'LIMIT' ? '限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。' : '市价委托是指以当前市场最优价格立即成交的委托方式。' }}
+                </text>
+                <view
+                  class="absolute bottom-[-8rpx] left-[20rpx] h-0 w-0 border-l-[8rpx] border-r-[8rpx] border-t-[8rpx] border-l-transparent border-r-transparent border-t-[#2C2C2C]"
+                />
+              </view>
+              <text class="text-[32rpx] text-[#333] font-bold">
+                {{ makeType === 'LIMIT' ? '限单价' : '市价' }}
+              </text>
+            </view>
+            <image :src="home_icon5" class="h-[22rpx] w-[34rpx]" />
+          </view>
+
+          <!-- 买入价格 -->
+          <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+            <text class="text-[24rpx] text-[#999999]">
+              {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}({{ source_name || 'USDT' }})
+            </text>
+            <input
+              v-model="buyOrSellPrice"
+              type="digit"
+              class="text-right text-[32rpx] text-[#333333] font-bold"
+              placeholder="请输入价格"
+              @input="handlePriceInput"
+            >
+          </view>
+
+          <!-- 数量 -->
+          <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+            <text class="min-w-[100rpx] text-[24rpx] text-[#999999]">
+              数量
+            </text>
+            <input
+              v-model="tradeAmount"
+              type="digit"
+              class="text-right text-[32rpx] text-[#333333] font-bold"
+              placeholder="请输入数量"
+              @input="handleAmountInput"
+            >
+            <text class="ml-[8rpx] text-[32rpx] text-[#333333] font-bold">
+              {{ symbol_name }}
             </text>
           </view>
-          <image :src="home_icon5" class="h-[22rpx] w-[34rpx]" />
-        </view>
 
-        <!-- 买入价格 -->
-        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
-            {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}({{ source_name || 'USDT' }})
-          </text>
-          <text class="text-[32rpx] text-[#333333] font-bold">
-            {{ buyOrSellPrice }}
-          </text>
-        </view>
-
-        <!-- 数量 -->
-        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
-            数量
-          </text>
-          <text class="text-[32rpx] text-[#333333] font-bold">
-            {{ tradeAmount }} {{ symbol_name }}
-          </text>
-        </view>
-
-        <!-- 添加滑动条 -->
-        <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <view
-            class="custom-slider"
-            @touchstart="handleSliderTouchStart"
-            @touchmove="handleSliderTouchMove"
-            @touchend="handleSliderTouchEnd"
-          >
-            <view class="slider-track">
+          <!-- 添加滑动条 -->
+          <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
+            <view
+              class="custom-slider"
+              @touchstart="handleSliderTouchStart"
+              @touchmove="handleSliderTouchMove"
+              @touchend="handleSliderTouchEnd"
+            >
+              <view class="slider-track">
+                <view
+                  class="slider-track-active"
+                  :style="{
+                    width: `${sliderValue}%`,
+                    backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
+                  }"
+                />
+              </view>
               <view
-                class="slider-track-active"
+                class="slider-steps"
+              >
+                <view
+                  v-for="(point, index) in [0, 25, 50, 75, 100]"
+                  :key="index"
+                  class="slider-step"
+                  :class="{ active: sliderValue >= point }"
+                  :style="{ left: `${point}%` }"
+                />
+              </view>
+              <view
+                class="slider-handle"
                 :style="{
-                  width: `${sliderValue}%`,
+                  left: `${sliderValue}%`,
                   backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
                 }"
               />
             </view>
-            <view
-              class="slider-steps"
+          </view>
+
+          <!-- 交易额显示 -->
+          <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+            <text class="text-[24rpx] text-[#999999]">
+              交易额({{ source_name || 'USDT' }})
+            </text>
+            <input
+              v-model="totalAmount"
+              type="digit"
+              disabled
+              class="text-right text-[32rpx] text-[#333333] font-bold"
+              :placeholder="`0.00 ${source_name || 'USDT'}`"
             >
-              <view
-                v-for="(point, index) in [0, 25, 50, 75, 100]"
-                :key="index"
-                class="slider-step"
-                :class="{ active: sliderValue >= point }"
-                :style="{ left: `${point}%` }"
-              />
-            </view>
-            <view
-              class="slider-handle"
-              :style="{
-                left: `${sliderValue}%`,
-                backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
-              }"
+          </view>
+
+          <!-- 可用余额 -->
+          <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+            <text class="text-[24rpx] text-[#999999]">
+              可用: {{ source_amount_display }}
+            </text>
+          </view>
+
+          <!-- 买入按钮 -->
+          <view class="mt-[40rpx]">
+            <u-button
+              :text="activeTab === 'BUY' ? '买入 IP' : '卖出 IP'" :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
+              :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
+              @click="handleOrder"
             />
           </view>
         </view>
 
-        <!-- 交易额显示 -->
-        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
-            交易额({{ source_name || 'USDT' }})
-          </text>
-          <text class="text-[32rpx] text-[#333333] font-bold">
-            {{ totalAmount }} {{ source_name }}
-          </text>
-        </view>
-
-        <!-- 可用余额 -->
-        <view class="mb-[28rpx] mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
-            可用: {{ source_amount_display }}
-          </text>
-        </view>
-
-        <!-- 买入按钮 -->
-        <view class="mt-[40rpx]">
-          <u-button
-            :text="activeTab === 'BUY' ? '买入 IP' : '卖出 IP'" :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
-            :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
-            @click="handleOrder"
-          />
-        </view>
-      </view>
-
-      <!-- 右侧报价列表 -->
-      <view class="h-[904rpx] flex flex-1 flex-col p-l-[10rpx] p-r-[20rpx]">
-        <!-- 标题栏 -->
-        <view class="h-[64rpx] flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
-          <text>价格<br> ({{ source_name || 'USDT' }})</text>
-          <text>数量 <br>({{ symbol_name || 'IP' }})</text>
-        </view>
-
-        <!-- 卖单列表 -->
-        <view class="flex-1 overflow-y-auto">
-          <!-- 卖单容器 -->
-          <view class="mt-[24rpx]">
-            <view
-              v-for="(item, index) in sellOrders" :key="index"
-              class="relative mb-[12rpx] h-[46rpx] flex items-center justify-between px-[12rpx]"
-            >
-              <!-- 内容保持在最上层 -->
-              <text class="relative z-1 text-[24rpx] text-[#E53935]">
-                {{ item.price }}
-              </text>
-              <text class="relative z-1 text-[24rpx] text-[#333]">
-                {{ item.amount }}
-              </text>
-            </view>
+        <!-- 右侧报价列表 -->
+        <view class="h-[904rpx] flex flex-1 flex-col p-l-[10rpx] p-r-[20rpx]">
+          <!-- 标题栏 -->
+          <view class="h-[64rpx] flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
+            <text>价格<br> ({{ source_name || 'USDT' }})</text>
+            <text>数量 <br>({{ symbol_name || 'IP' }})</text>
           </view>
 
-          <!-- 当前价格 -->
-          <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
-            <view>
-              <text class="text-[28rpx] font-bold transition-colors duration-100">
-                {{ currentPrice }}
-              </text>
-            </view>
-          </view>
-
-          <!-- 买单列表 -->
-          <view class="mb-[24rpx]">
-            <view
-              v-for="(item, index) in buyOrders" :key="index"
-              class="relative mb-[12rpx] h-[56rpx] flex items-center justify-between px-[12rpx]"
-            >
-              <!-- 内容保持在最上层 -->
-              <text class="relative z-1 text-[24rpx] text-[#00B069]">
-                {{ item.price }}
-              </text>
-              <text class="relative z-1 text-[24rpx] text-[#333]">
-                {{ item.amount }}
-              </text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-    <!-- 委托 -->
-    <view class="mt-[40rpx] h-1160rpx overflow-auto bg-white p-x-[28rpx] p-b-[28rpx]">
-      <z-paging
-        ref="paging" v-model="orderList" :auto="true" :refresher-enabled="true" :show-scrollbar="false"
-        language="zh-cn" empty-view-text="暂无委托订单" :loading-more-enabled="true" :auto-scroll-to-top-when-reload="true"
-        :fixed="false" loading-more-no-more-text="没有更多数据了" no-more-data-text="没有更多数据了"
-        loading-more-loading-text="加载中..." loading-more-failed-text="加载失败，点击重试" refresher-default-text="下拉刷新"
-        refresher-pulling-text="松开刷新" refresher-refreshing-text="刷新中..." @query="queryOrderList"
-      >
-        <template #default>
-          <view v-for="(item, index) in orderList" :key="index" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
-            <view>
-              <view class="flex items-center justify-between">
-                <view class="flex items-center gap-[12rpx]">
-                  <text class="text-[32rpx] text-[#333] font-bold">
-                    {{ item.symbol }}
-                  </text>
-                  <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-                    <text class="text-[24rpx] text-[#E6302F]">
-                      {{ item.order_side === 'BUY' ? '买入' : '卖出' }}
-                    </text>
-                  </view>
-                  <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
-                    <text class="text-[24rpx] text-[#F7B966]">
-                      {{ item.make_type === 'LIMIT' ? '限价' : '市价' }}
-                    </text>
-                  </view>
-                </view>
-                <view class="text-[28rpx] text-[#999] font-500">
-                  {{ item.create_at }}
-                </view>
-              </view>
-            </view>
-            <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-              <view class="flex flex-col items-center justify-center">
-                <view class="price-display text-[44rpx] text-[#333] font-bold">
+          <!-- 卖单列表 -->
+          <view class="flex-1 overflow-y-auto">
+            <!-- 卖单容器 -->
+            <view class="mt-[24rpx]">
+              <view
+                v-for="(item, index) in sellOrders" :key="index"
+                class="relative mb-[12rpx] h-[46rpx] flex cursor-pointer items-center justify-between px-[12rpx]"
+                :class="{ 'selected-price': selectedPrice === item.price }"
+                @click="handlePriceSelect(item.price)"
+              >
+                <!-- 内容保持在最上层 -->
+                <text class="relative z-1 text-[24rpx] text-[#E53935]">
                   {{ item.price }}
-                </view>
-                <view class="text-[24rpx] text-[#666]">
-                  委托价格({{ source_name }})
-                </view>
-              </view>
-
-              <view class="flex flex-col items-center justify-center">
-                <view class="price-display text-[44rpx] text-[#333] font-bold">
+                </text>
+                <text class="relative z-1 text-[24rpx] text-[#333]">
                   {{ item.amount }}
-                </view>
-                <view class="text-[24rpx] text-[#666]">
-                  委托数量({{ symbol_name }})
-                </view>
-              </view>
-              <view class="flex flex-col items-center justify-center">
-                <view class="price-display text-[44rpx] text-[#333] font-bold">
-                  {{ item.volume }}
-                </view>
-                <view class="text-[24rpx] text-[#666]">
-                  交易额({{ source_name }})
-                </view>
+                </text>
               </view>
             </view>
 
-            <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
-              <view class="flex flex-col items-center justify-center">
-                <view class="price-display text-[44rpx] text-[#E6302F] font-bold">
-                  {{ item.deal_amount }}
-                </view>
-                <view class="text-[24rpx] text-[#999]">
-                  已成交({{ symbol_name }})
-                </view>
+            <!-- 当前价格 -->
+            <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
+              <view>
+                <text class="text-[28rpx] font-bold transition-colors duration-100">
+                  {{ currentPrice }}
+                </text>
               </view>
+            </view>
+
+            <!-- 买单列表 -->
+            <view class="mb-[24rpx]">
               <view
-                v-if="item.status === 'ORDER_COMMITED'"
-                class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold"
-                @click="cancelOrder(item.id)"
+                v-for="(item, index) in buyOrders" :key="index"
+                class="relative mb-[12rpx] h-[56rpx] flex cursor-pointer items-center justify-between px-[12rpx]"
+                :class="{ 'selected-price': selectedPrice === item.price }"
+                @click="handlePriceSelect(item.price)"
               >
-                撤销
-              </view>
-              <view
-                v-else-if="['INIT', 'MAKE_ORDER', 'ORDER_CANCELING'].includes(item.status)"
-                class="rounded-[8rpx] bg-[#EFEFEF] p-x-[68rpx] p-y-[16rpx] text-[#999999] font-bold"
-              >
-                处理中
+                <!-- 内容保持在最上层 -->
+                <text class="relative z-1 text-[24rpx] text-[#00B069]">
+                  {{ item.price }}
+                </text>
+                <text class="relative z-1 text-[24rpx] text-[#333]">
+                  {{ item.amount }}
+                </text>
               </view>
             </view>
           </view>
-        </template>
-      </z-paging>
-    </view>
+        </view>
+      </view>
+      <!-- 委托 -->
+      <view class="mt-[40rpx] bg-white p-x-[28rpx] p-b-[28rpx]">
+        <view v-for="(item, index) in orderList" :key="index" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx">
+          <view>
+            <view class="flex items-center justify-between">
+              <view class="flex items-center gap-[12rpx]">
+                <text class="text-[32rpx] text-[#333] font-bold">
+                  {{ item.symbol }}
+                </text>
+                <view class="border-[2rpx] border-[#E6302F] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                  <text class="text-[24rpx] text-[#E6302F]">
+                    {{ item.order_side === 'BUY' ? '买入' : '卖出' }}
+                  </text>
+                </view>
+                <view class="border-[2rpx] border-[#F7B966] rounded-[4rpx] border-solid p-x-[8rpx] p-y-[4rpx]">
+                  <text class="text-[24rpx] text-[#F7B966]">
+                    {{ item.make_type === 'LIMIT' ? '限价' : '市价' }}
+                  </text>
+                </view>
+              </view>
+              <view class="text-[28rpx] text-[#999] font-500">
+                {{ item.create_at }}
+              </view>
+            </view>
+          </view>
+          <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+            <view class="flex flex-col items-center justify-center">
+              <view class="price-display text-[44rpx] text-[#333] font-bold">
+                {{ item.price }}
+              </view>
+              <view class="text-[24rpx] text-[#666]">
+                委托价格({{ source_name }})
+              </view>
+            </view>
+
+            <view class="flex flex-col items-center justify-center">
+              <view class="price-display text-[44rpx] text-[#333] font-bold">
+                {{ item.amount }}
+              </view>
+              <view class="text-[24rpx] text-[#666]">
+                委托数量({{ symbol_name }})
+              </view>
+            </view>
+            <view class="flex flex-col items-center justify-center">
+              <view class="price-display text-[44rpx] text-[#333] font-bold">
+                {{ item.volume }}
+              </view>
+              <view class="text-[24rpx] text-[#666]">
+                交易额({{ source_name }})
+              </view>
+            </view>
+          </view>
+
+          <view class="mt-[40rpx] flex items-center justify-between px-[28rpx]">
+            <view class="flex flex-col items-center justify-center">
+              <view class="price-display text-[44rpx] text-[#E6302F] font-bold">
+                {{ item.deal_amount }}
+              </view>
+              <view class="text-[24rpx] text-[#999]">
+                已成交({{ symbol_name }})
+              </view>
+            </view>
+            <view
+              v-if="item.status === 'ORDER_COMMITED'"
+              class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold"
+              @click="cancelOrder(item.id)"
+            >
+              撤销
+            </view>
+            <view
+              v-else-if="['INIT', 'MAKE_ORDER', 'ORDER_CANCELING'].includes(item.status)"
+              class="rounded-[8rpx] bg-[#EFEFEF] p-x-[68rpx] p-y-[16rpx] text-[#999999] font-bold"
+            >
+              处理中
+            </view>
+          </view>
+        </view>
+        <!-- 加载更多 -->
+        <view v-if="orderList.length > 0" class="py-[20rpx] text-center text-[28rpx] text-[#999]">
+          {{ hasMore ? '加载中...' : '没有更多数据了' }}
+        </view>
+        <!-- 空状态 -->
+        <view v-if="orderList.length === 0" class="py-[40rpx] text-center text-[28rpx] text-[#999]">
+          暂无委托订单
+        </view>
+      </view>
+    </scroll-view>
 
     <!-- 币种选择弹出层 -->
     <u-popup
@@ -550,35 +576,81 @@ const buyOrders = ref<{ price: string; amount: string }[]>([]);
 // 滑动条相关变量
 const sliderValue = ref(0);
 
+// 添加一个标志来控制是否应该自动更新价格
+const isPriceManuallySet = ref(false);
+
+// 添加交易相关的配置参数
+const tradingConfig = ref({
+  step_size: 1, // 数量步长
+  min_size: 0, // 最小交易数量
+  min_notional_price: 0, // 最小交易价格
+});
+
 // 计算最大可交易数量
 const calculateMaxTradeAmount = () => {
   if (!buyOrSellPrice.value || Number.parseFloat(buyOrSellPrice.value) <= 0) {
     return 0;
   }
-  // 获取可用余额
-  const availableBalance = Number.parseFloat(source_amount.value || '0');
-  // 根据买入/卖出计算最大可交易数量
+
+  const price = Number.parseFloat(buyOrSellPrice.value);
+  const stepSize = tradingConfig.value.step_size;
+
   if (activeTab.value === 'BUY') {
-    // 买入时，最大数量 = 可用余额 / 买入价格
-    return availableBalance / Number.parseFloat(buyOrSellPrice.value);
+    // 买入时，最大数量 = 取整((源币数量/买入价格)/step_size) * step_size
+    const sourceAmount = Number.parseFloat(source_amount.value || '0');
+    const baseAmount = sourceAmount / price;
+    return Math.floor(baseAmount / stepSize) * stepSize;
   }
   else {
-    // 卖出时，直接使用可用余额（假设这里的可用余额是IP数量）
-    return availableBalance;
+    // 卖出时，最大数量 = 取整(目标币数量/step_size) * step_size
+    const targetAmount = Number.parseFloat(source_amount.value || '0');
+    return Math.floor(targetAmount / stepSize) * stepSize;
   }
 };
 
-// 更新交易数量和总额
-const updateTradeInfo = () => {
+// 修改获取交易对设置函数
+const fetchSymbolSetting = async (): Promise<void> => {
+  // eslint-disable-next-line ts/no-use-before-define
+  const res = await getSymbolSetting({ symbol_id: selectedSymbolId.value!, source_id: selectedSourceId.value!, exchange_id: selectedExchangeId.value! });
+  source_amount.value = res.source_amount;
+  source_amount_display.value = res.source_amount_display;
+  source_name.value = res.source_name;
+  symbol_name.value = res.symbol;
+
+  // 设置交易配置
+  tradingConfig.value = {
+    step_size: Number(res.step_size) || 1,
+    min_size: Number(res.min_size) || 0,
+    min_notional_price: Number(res.min_notional_price) || 0,
+  };
+
+  // 更新交易信息
+  // eslint-disable-next-line ts/no-use-before-define
+  updateTradeInfo();
+};
+
+// 修改数量计算逻辑
+const calculateTradeAmount = (percentage: number) => {
   const maxAmount = calculateMaxTradeAmount();
-  // 根据滑块百分比计算实际交易数量
-  const percentage = sliderValue.value / 100;
-  const amount = maxAmount * percentage;
-  // 更新交易数量显示，保留6位小数
-  tradeAmount.value = amount.toFixed(6);
+  // 根据滑块百分比计算基础数量
+  const baseAmount = maxAmount * (percentage / 100);
+
+  // 买入数量 = 取整((当前数量/step_size) * step_size)，保证精度
+  const stepSize = tradingConfig.value.step_size;
+  return Math.floor(baseAmount / stepSize) * stepSize;
+};
+
+// 修改更新交易信息函数
+const updateTradeInfo = () => {
+  // 如果没有手动输入数量，根据滑块计算
+  if (!tradeAmount.value) {
+    const amount = calculateTradeAmount(sliderValue.value);
+    tradeAmount.value = amount.toFixed(6);
+  }
+
   // 计算交易总额
-  if (buyOrSellPrice.value) {
-    const total = amount * Number.parseFloat(buyOrSellPrice.value);
+  if (buyOrSellPrice.value && tradeAmount.value) {
+    const total = Number(tradeAmount.value) * Number(buyOrSellPrice.value);
     totalAmount.value = total.toFixed(2);
   }
   else {
@@ -586,11 +658,29 @@ const updateTradeInfo = () => {
   }
 };
 
-// 买入按钮点击事件
+// 添加选中价格的响应式变量
+const selectedPrice = ref('');
+
+// 修改价格选择处理函数
+const handlePriceSelect = (price: string) => {
+  // 设置手动输入标志
+  isPriceManuallySet.value = true;
+  // 设置价格
+  buyOrSellPrice.value = price;
+  // 设置选中的价格
+  selectedPrice.value = price;
+  // 更新交易信息
+  updateTradeInfo();
+};
+
+// 修改买入按钮点击事件
 const handleBuy = () => {
   activeTab.value = 'BUY';
   // 重置滑块和交易数量
   sliderValue.value = 0;
+  // 重置手动输入标志和选中价格
+  isPriceManuallySet.value = false;
+  selectedPrice.value = '';
   // 切换到买入时更新价格和交易信息
   if (buyOrders.value.length > 0) {
     buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
@@ -598,11 +688,14 @@ const handleBuy = () => {
   updateTradeInfo();
 };
 
-// 卖出按钮点击事件
+// 修改卖出按钮点击事件
 const handleSell = () => {
   activeTab.value = 'SELL';
   // 重置滑块和交易数量
   sliderValue.value = 0;
+  // 重置手动输入标志和选中价格
+  isPriceManuallySet.value = false;
+  selectedPrice.value = '';
   // 切换到卖出时更新价格和交易信息
   if (sellOrders.value.length > 0) {
     buyOrSellPrice.value = sellOrders.value[0].price;
@@ -632,83 +725,80 @@ const toggleTooltip = (e: Event) => {
 
 // 委托订单列表
 const orderList = ref<any[]>([]);
+
 // 添加分页相关变量
-const paging = ref<any>(null);
+const currentPage = ref(1);
+const pageSize = ref(10);
+const hasMore = ref(true);
+const isRefreshing = ref(false);
 
-// 获取委托订单列表 - 分页查询
-const queryOrderList = async (pageNo: number, pageSizeParam: number) => {
-  if (getToken()) {
-    try {
-      const res = await getOrderList({
-        status: 0,
-        pageSize: pageSizeParam,
-        current: pageNo,
-      });
+// 获取委托订单列表
+const queryOrderList = async (page: number, size: number) => {
+  if (!getToken()) return;
 
-      if (res && res.records) {
+  try {
+    const res = await getOrderList({
+      status: 0,
+      pageSize: size,
+      current: page,
+    });
+
+    if (res && res.records) {
       // 过滤掉不需要显示的订单状态
-        const filteredList = res.records.filter(item =>
-          !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
-        );
+      const filteredList = res.records.filter(item =>
+        !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
+      );
 
-        // 通知z-paging加载完成
-        if (paging.value) {
-          paging.value.complete(filteredList);
-        }
+      // 判断是否还有更多数据 - 修改判断逻辑
+      hasMore.value = page * size < res.total;
 
-        // 如果没有更多数据，通知z-paging
-        if (filteredList.length < pageSizeParam || (res as any).current >= (res as any).pages) {
-          paging.value.complete(filteredList);
-        }
+      // 如果是第一页,直接替换数据
+      if (page === 1) {
+        orderList.value = filteredList;
       }
       else {
-      // 如果没有数据，通知z-paging加载完成，无更多数据
-        if (paging.value) {
-          paging.value.complete([]);
-        }
+        // 否则追加数据
+        orderList.value = [...orderList.value, ...filteredList];
       }
     }
-    catch (error) {
-      console.error('获取委托订单列表失败:', error);
-      // 通知z-paging加载失败
-      if (paging.value) {
-        paging.value.complete(false);
-      }
-      uni.showToast({
-        title: '获取订单列表失败',
-        icon: 'none',
-      });
-    }
+  }
+  catch (error) {
+    console.error('获取委托订单列表失败:', error);
+    uni.showToast({
+      title: '获取订单列表失败',
+      icon: 'none',
+    });
   }
 };
 
-// 刷新委托订单列表
-const fetchOrderList = async () => {
-  if (paging.value) {
-    paging.value.reload();
+// 加载更多
+const loadMore = async () => {
+  // 修改判断条件
+  if (!hasMore.value) {
+    return;
   }
-  else {
-    // 兼容旧逻辑
-    try {
-      const res = await getOrderList({
-        status: 0, // 已完成的订单
-        pageSize: 10,
-        current: 1,
-      });
 
-      if (res && res.records) {
-        // 过滤掉不需要显示的订单状态
-        orderList.value = res.records.filter(item => !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status));
-      }
-    }
-    catch (error) {
-      console.error('获取委托订单列表失败:', error);
-      uni.showToast({
-        title: '获取订单列表失败',
-        icon: 'none',
-      });
-    }
+  try {
+    currentPage.value++;
+    await queryOrderList(currentPage.value, pageSize.value);
   }
+  catch (error) {
+    console.error('加载更多失败:', error);
+  }
+};
+
+// 刷新
+const onRefresh = async () => {
+  isRefreshing.value = true;
+  currentPage.value = 1;
+  await queryOrderList(1, pageSize.value);
+  isRefreshing.value = false;
+};
+
+// 修改刷新委托订单列表函数
+const fetchOrderList = async () => {
+  currentPage.value = 1;
+  await queryOrderList(1, pageSize.value);
 };
 
 const token = getGoogleToken();
@@ -813,17 +903,6 @@ const fetchSymbolList = async (): Promise<void> => {
   }
 };
 
-// 获取交易对设置
-const fetchSymbolSetting = async (): Promise<void> => {
-  const res = await getSymbolSetting({ symbol_id: selectedSymbolId.value!, source_id: selectedSourceId.value!, exchange_id: selectedExchangeId.value! });
-  source_amount.value = res.source_amount;
-  source_amount_display.value = res.source_amount_display;
-  source_name.value = res.source_name;
-  symbol_name.value = res.symbol;
-  // 更新交易信息
-  updateTradeInfo();
-};
-
 // 撤销订单
 const cancelOrder = (orderId: number) => {
   // 显示确认弹窗
@@ -923,22 +1002,25 @@ onMounted(async () => {
         // 处理深度数据
         if (message.A && message.B) {
           // A是买单列表，按价格从大到小排序
-          buyOrders.value = [...message.A].map(item => ({
+          buyOrders.value = [...message.B].map(item => ({
             price: item.P,
             amount: item.V,
           })).sort((a, b) => Number(b.price) - Number(a.price));
 
           // B是卖单列表，按价格从大到小排序
-          sellOrders.value = [...message.B].map(item => ({
+          sellOrders.value = [...message.A].map(item => ({
             price: item.P,
             amount: item.V,
           })).sort((a, b) => Number(b.price) - Number(a.price));
 
-          if (activeTab.value === 'BUY') {
-            buyOrSellPrice.value = buyOrders.value[0].price;
-          }
-          else if (activeTab.value === 'SELL') {
-            buyOrSellPrice.value = sellOrders.value[0].price;
+          // 只有在非手动输入状态下才自动更新价格
+          if (!isPriceManuallySet.value) {
+            if (activeTab.value === 'BUY') {
+              buyOrSellPrice.value = buyOrders.value[0].price;
+            }
+            else if (activeTab.value === 'SELL') {
+              buyOrSellPrice.value = sellOrders.value[0].price;
+            }
           }
 
           // 价格变化时更新交易信息
@@ -951,7 +1033,7 @@ onMounted(async () => {
       if (message.T === 'O') {
         console.log('订单更新消息:', message);
         // 查找并更新订单列表中对应的订单
-        const orderIndex = orderList.value.findIndex(item => item.order_id === message.ID);
+        const orderIndex = orderList.value.findIndex(item => item.id === message.ID);
         if (orderIndex !== -1) {
           // 更新订单状态和成交数量
           orderList.value[orderIndex].status = message.S;
@@ -1139,47 +1221,130 @@ const handleConfirmPassword = async () => {
   }
 };
 
+// 修改滑块值变化处理函数
+const handleSliderChange = (percentage: number) => {
+  const maxAmount = calculateMaxTradeAmount();
+  if (!maxAmount || !buyOrSellPrice.value) return;
+
+  const price = Number(buyOrSellPrice.value);
+  const stepSize = tradingConfig.value.step_size;
+
+  // 如果百分比为0,直接设置数量为0
+  if (percentage === 0) {
+    tradeAmount.value = '0';
+    totalAmount.value = '0';
+    return;
+  }
+
+  // 计算基础数量
+  const baseAmount = maxAmount * (percentage / 100);
+
+  // 应用step_size规则，保证精度
+  const adjustedAmount = Math.floor(baseAmount / stepSize) * stepSize;
+
+  // 更新交易数量
+  tradeAmount.value = adjustedAmount.toFixed(6);
+
+  // 计算交易总额
+  const total = adjustedAmount * price;
+  totalAmount.value = total.toFixed(2);
+};
+
 // 处理滑块拖动事件
 const handleSliderTouchStart = (e: TouchEvent) => {
-  // 使用uni-app的方式获取元素位置
   const touch = e.touches[0];
   const query = uni.createSelectorQuery();
   query.select('.custom-slider').boundingClientRect((data: any) => {
     if (!data) return;
     const offsetX = touch.clientX - data.left;
-
-    // 直接设置滑块位置
-    const percentage = Math.min(Math.max((offsetX / data.width) * 100, 0), 100);
+    const percentage = Math.max(Math.min((offsetX / data.width) * 100, 100), 0);
     sliderValue.value = percentage;
-    updateTradeInfo();
+    handleSliderChange(percentage);
   }).exec();
 };
 
 const handleSliderTouchMove = (e: TouchEvent) => {
   e.preventDefault();
   const touch = e.touches[0];
-
-  // 使用uni-app的方式获取元素位置
   const query = uni.createSelectorQuery();
   query.select('.custom-slider').boundingClientRect((data: any) => {
     if (!data) return;
     const offsetX = touch.clientX - data.left;
-
-    // 计算百分比位置 (限制在0-100之间)
-    const percentage = Math.min(Math.max((offsetX / data.width) * 100, 0), 100);
-
-    // 设置滑块值并更新交易信息
+    const percentage = Math.max(Math.min((offsetX / data.width) * 100, 100), 0);
     sliderValue.value = percentage;
-    updateTradeInfo();
+    handleSliderChange(percentage);
   }).exec();
 };
 
 const handleSliderTouchEnd = () => {
+  handleSliderChange(sliderValue.value);
+};
 
+// 修改价格输入处理函数
+const handlePriceInput = (e: any) => {
+  const value = e.detail.value;
+  // 设置手动输入标志
+  isPriceManuallySet.value = true;
+  // 限制只能输入数字和小数点
+  if (!/^\d*(?:\.\d*)?$/.test(value)) {
+    buyOrSellPrice.value = value.replace(/[^\d.]/g, '');
+  }
+  // 限制小数点后最多6位
+  if (value.includes('.')) {
+    const parts = value.split('.');
+    if (parts[1].length > 6) {
+      buyOrSellPrice.value = `${parts[0]}.${parts[1].slice(0, 6)}`;
+    }
+  }
+  // 更新交易信息
+  updateTradeInfo();
+};
+
+// 修改数量输入处理函数
+const handleAmountInput = (e: any) => {
+  const value = e.detail.value;
+  // 限制只能输入数字和小数点
+  if (!/^\d*(?:\.\d*)?$/.test(value)) {
+    tradeAmount.value = value.replace(/[^\d.]/g, '');
+    return;
+  }
+
+  // 限制小数点后最多6位
+  if (value.includes('.')) {
+    const parts = value.split('.');
+    if (parts[1].length > 6) {
+      tradeAmount.value = `${parts[0]}.${parts[1].slice(0, 6)}`;
+      return;
+    }
+  }
+
+  const numValue = Number(value);
+  const stepSize = tradingConfig.value.step_size;
+  const price = Number(buyOrSellPrice.value);
+
+  // 应用step_size规则，保证精度
+  const adjustedAmount = Math.floor(numValue / stepSize) * stepSize;
+  tradeAmount.value = adjustedAmount.toString();
+
+  // 计算交易总额
+  if (buyOrSellPrice.value) {
+    const total = adjustedAmount * price;
+    totalAmount.value = total.toFixed(2);
+  }
 };
 </script>
 
 <style lang="scss" scoped>
+.main-container {
+  height: calc(100vh - var(--status-bar-height) - 88rpx);
+  overflow: hidden;
+  position: relative;
+}
+
+.main-scroll-view {
+  height: 100% !important;
+}
+
 .slider-custom {
   margin: 0;
 }
@@ -1276,5 +1441,20 @@ const handleSliderTouchEnd = () => {
 .slider-step.active {
   background-color: #E53935;
   border-color: #E53935;
+}
+
+/* 添加选中价格的背景样式 */
+.selected-price {
+  background-color: rgba(229, 57, 53, 0.1);
+  border-radius: 4rpx;
+}
+
+/* 添加滚动视图样式 */
+:deep(.uni-scroll-view) {
+  height: 100% !important;
+}
+
+:deep(.uni-scroll-view-content) {
+  min-height: 100%;
 }
 </style>
