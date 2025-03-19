@@ -1,5 +1,5 @@
 <template>
-  <view class="h-full">
+  <view class="overflow-y-auto">
     <slot />
   </view>
 </template>

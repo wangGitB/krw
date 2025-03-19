@@ -5,6 +5,10 @@
   <c-header :show-back="false" has-background title="行情" class="relative z-10" />
   <!-- container -->
   <c-container class="main-container">
+    <view
+      class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
+      :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
+    />
     <scroll-view
       scroll-y
       class="main-scroll-view"
@@ -15,10 +19,6 @@
     >
       <!-- 整体内容 -->
       <view>
-        <view
-          class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
-          :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
-        />
         <!-- 币种选择器 -->
         <view class="mb-[20rpx] mt-[24rpx] p-l-[28rpx] p-r-[18rpx]">
           <view
@@ -1353,11 +1353,11 @@ const handleAmountInput = (e: any) => {
 </script>
 
 <style lang="scss" scoped>
-.main-container {
-  height: calc(100vh - var(--status-bar-height) - 88rpx);
-  overflow: hidden;
-  position: relative;
-}
+// .main-container {
+//   height: calc(100vh - var(--status-bar-height) - 88rpx);
+//   overflow: hidden;
+//   position: relative;
+// }
 
 .main-scroll-view {
   height: 100% !important;
