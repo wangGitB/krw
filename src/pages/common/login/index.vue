@@ -47,6 +47,7 @@
 import { login, loginByCode } from '@/api/user';
 // import { LOGIN_PATH, removeQueryString } from '@/router';
 import { setToken } from '@/utils/auth';
+import { SHA256 } from 'crypto-js';
 
 const login_name = ref<string>('');
 const captcha = ref<string>('');
@@ -91,7 +92,7 @@ async function submit() {
     }
     const res = await login({
       login_name: login_name.value,
-      password: password.value,
+      password: SHA256(password.value).toString(),
       captcha: captcha.value,
     });
     // 登录成功后跳转

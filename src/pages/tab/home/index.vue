@@ -90,7 +90,7 @@
         <!-- 买入价格 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
           <text class="text-[24rpx] text-[#999999]">
-            {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}(USDT)
+            {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}({{ source_name || 'USDT' }})
           </text>
           <text class="text-[32rpx] text-[#333333] font-bold">
             {{ buyOrSellPrice }}
@@ -103,56 +103,63 @@
             数量
           </text>
           <text class="text-[32rpx] text-[#333333] font-bold">
-            {{ tradeAmount }} IP
+            {{ tradeAmount }} {{ symbol_name }}
           </text>
         </view>
 
         <!-- 添加滑动条 -->
         <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <slider
-            :value="sliderValue" :min="minValue" :max="maxValue" :step="0.00000001" :block-size="12"
-            :active-color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'" background-color="#FFE4E1" class="slider-custom"
-            @change="handleSliderChange" @changing="handleSliderChange"
-          />
-          <view class="mt-[10rpx] flex items-center justify-between">
-            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(0)">
-              0%
-            </text>
-            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(25)">
-              25%
-            </text>
-            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(50)">
-              50%
-            </text>
-            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(75)">
-              75%
-            </text>
-            <text class="text-[20rpx] text-[#999999]" @click="selectPercentage(100)">
-              100%
-            </text>
+          <view
+            class="custom-slider"
+            @touchstart="handleSliderTouchStart"
+            @touchmove="handleSliderTouchMove"
+            @touchend="handleSliderTouchEnd"
+          >
+            <view class="slider-track">
+              <view
+                class="slider-track-active"
+                :style="{
+                  width: `${sliderValue}%`,
+                  backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
+                }"
+              />
+            </view>
+            <view
+              class="slider-steps"
+            >
+              <view
+                v-for="(point, index) in [0, 25, 50, 75, 100]"
+                :key="index"
+                class="slider-step"
+                :class="{ active: sliderValue >= point }"
+                :style="{ left: `${point}%` }"
+              />
+            </view>
+            <view
+              class="slider-handle"
+              :style="{
+                left: `${sliderValue}%`,
+                backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
+              }"
+            />
           </view>
         </view>
 
         <!-- 交易额显示 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="w-85rpx text-[24rpx] text-[#999999]">
-            交易额
+          <text class="text-[24rpx] text-[#999999]">
+            交易额({{ source_name || 'USDT' }})
           </text>
-          <text class="text-end text-[32rpx] text-[#333333] font-bold">
-            {{ totalAmount }} USDT
+          <text class="text-[32rpx] text-[#333333] font-bold">
+            {{ totalAmount }} {{ source_name }}
           </text>
         </view>
 
         <!-- 可用余额 -->
-        <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <view class="flex flex-1 items-center">
-            <text class="text-[24rpx] text-[#999999]">
-              可用
-            </text>
-            <text class="ml-[8rpx] text-[24rpx] text-[#333333]">
-              {{ source_amount_display }} USDT
-            </text>
-          </view>
+        <view class="mb-[28rpx] mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+          <text class="text-[24rpx] text-[#999999]">
+            可用: {{ source_amount_display }}
+          </text>
         </view>
 
         <!-- 买入按钮 -->
@@ -169,8 +176,8 @@
       <view class="h-[904rpx] flex flex-1 flex-col p-l-[10rpx] p-r-[20rpx]">
         <!-- 标题栏 -->
         <view class="h-[64rpx] flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
-          <text>价格<br> (USDT)</text>
-          <text>数量 <br>(IP)</text>
+          <text>价格<br> ({{ source_name || 'USDT' }})</text>
+          <text>数量 <br>({{ symbol_name || 'IP' }})</text>
         </view>
 
         <!-- 卖单列表 -->
@@ -247,7 +254,7 @@
                   </view>
                 </view>
                 <view class="text-[28rpx] text-[#999] font-500">
-                  {{ formatDate(item.create_at) }}
+                  {{ item.create_at }}
                 </view>
               </view>
             </view>
@@ -257,7 +264,7 @@
                   {{ item.price }}
                 </view>
                 <view class="text-[24rpx] text-[#666]">
-                  委托价格(USDT)
+                  委托价格({{ source_name }})
                 </view>
               </view>
 
@@ -266,7 +273,7 @@
                   {{ item.amount }}
                 </view>
                 <view class="text-[24rpx] text-[#666]">
-                  委托数量(IP)
+                  委托数量({{ symbol_name }})
                 </view>
               </view>
               <view class="flex flex-col items-center justify-center">
@@ -274,7 +281,7 @@
                   {{ item.volume }}
                 </view>
                 <view class="text-[24rpx] text-[#666]">
-                  交易额(USDT)
+                  交易额({{ source_name }})
                 </view>
               </view>
             </view>
@@ -285,7 +292,7 @@
                   {{ item.deal_amount }}
                 </view>
                 <view class="text-[24rpx] text-[#999]">
-                  已成交(IP)
+                  已成交({{ symbol_name }})
                 </view>
               </view>
               <view
@@ -427,7 +434,7 @@
             {{ activeTab === 'BUY' ? '买入' : '卖出' }}价格
           </text>
           <text class="text-[28rpx] text-[#333]">
-            {{ buyOrSellPrice }} USDT
+            {{ buyOrSellPrice }} {{ source_name }}
           </text>
         </view>
         <view class="mb-[20rpx] flex items-center justify-between">
@@ -435,7 +442,7 @@
             买入量
           </text>
           <text class="text-[28rpx] text-[#333]">
-            {{ tradeAmount }} IP
+            {{ tradeAmount }} {{ symbol_name }}
           </text>
         </view>
         <view class="mb-[20rpx] flex items-center justify-between">
@@ -443,7 +450,7 @@
             交易额
           </text>
           <text class="text-[28rpx] text-[#333]">
-            {{ totalAmount }} USDT
+            {{ totalAmount }} {{ source_name }}
           </text>
         </view>
       </view>
@@ -518,9 +525,11 @@ const isLoading = ref(true);
 
 // 添加当前价格的响应式引用
 const currentPrice = ref(0);
-// 源币数量
+// 源币数量和名称
 const source_amount = ref('');
 const source_amount_display = ref('');
+const source_name = ref('');
+const symbol_name = ref('');
 // 当前激活的标签页（买入/卖出）
 const activeTab = ref('BUY'); // 默认选中买入
 
@@ -539,8 +548,6 @@ const sellOrders = ref<{ price: string; amount: string }[]>([]);
 const buyOrders = ref<{ price: string; amount: string }[]>([]);
 
 // 滑动条相关变量
-const minValue = ref(0);
-const maxValue = ref(100);
 const sliderValue = ref(0);
 
 // 计算最大可交易数量
@@ -617,86 +624,61 @@ const toggleTooltip = (e: Event) => {
   showTooltip.value = !showTooltip.value;
 };
 
-// 滑动条改变事件
-const handleSliderChange = (e: any) => {
-  sliderValue.value = e.detail.value;
-  updateTradeInfo();
-};
-
-// const handleSliderChanging = (e: any) => {
-//   sliderValue.value = e.detail.value;
+// 快速选择百分比
+// const selectPercentage = (percentage: number) => {
+//   sliderValue.value = percentage;
 //   updateTradeInfo();
 // };
 
-// 快速选择百分比
-const selectPercentage = (percentage: number) => {
-  sliderValue.value = percentage;
-  updateTradeInfo();
-};
-
-// const handleAdd = () => {
-//   // 可以添加充值或其他操作
-// };
 // 委托订单列表
 const orderList = ref<any[]>([]);
 // 添加分页相关变量
 const paging = ref<any>(null);
 
-// 格式化日期
-const formatDate = (dateString: string) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-
 // 获取委托订单列表 - 分页查询
 const queryOrderList = async (pageNo: number, pageSizeParam: number) => {
-  try {
-    const res = await getOrderList({
-      status: 0,
-      pageSize: pageSizeParam,
-      current: pageNo,
-    });
+  if (getToken()) {
+    try {
+      const res = await getOrderList({
+        status: 0,
+        pageSize: pageSizeParam,
+        current: pageNo,
+      });
 
-    if (res && res.records) {
+      if (res && res.records) {
       // 过滤掉不需要显示的订单状态
-      const filteredList = res.records.filter(item =>
-        !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
-      );
+        const filteredList = res.records.filter(item =>
+          !['ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED', 'ORDER_FINISHED'].includes(item.status),
+        );
 
-      // 通知z-paging加载完成
-      if (paging.value) {
-        paging.value.complete(filteredList);
-      }
+        // 通知z-paging加载完成
+        if (paging.value) {
+          paging.value.complete(filteredList);
+        }
 
-      // 如果没有更多数据，通知z-paging
-      if (filteredList.length < pageSizeParam || (res as any).current >= (res as any).pages) {
-        paging.value.complete(filteredList);
+        // 如果没有更多数据，通知z-paging
+        if (filteredList.length < pageSizeParam || (res as any).current >= (res as any).pages) {
+          paging.value.complete(filteredList);
+        }
       }
-    }
-    else {
+      else {
       // 如果没有数据，通知z-paging加载完成，无更多数据
-      if (paging.value) {
-        paging.value.complete([]);
+        if (paging.value) {
+          paging.value.complete([]);
+        }
       }
     }
-  }
-  catch (error) {
-    console.error('获取委托订单列表失败:', error);
-    // 通知z-paging加载失败
-    if (paging.value) {
-      paging.value.complete(false);
+    catch (error) {
+      console.error('获取委托订单列表失败:', error);
+      // 通知z-paging加载失败
+      if (paging.value) {
+        paging.value.complete(false);
+      }
+      uni.showToast({
+        title: '获取订单列表失败',
+        icon: 'none',
+      });
     }
-    uni.showToast({
-      title: '获取订单列表失败',
-      icon: 'none',
-    });
   }
 };
 
@@ -757,6 +739,7 @@ const selectedUniqueSymbolId = ref<string | null>(null);
 const selectedSymbolId = ref<number | null>(null);
 const selectedExchangeId = ref<number | null>(null);
 const selectedSourceId = ref<number | null>(null);
+
 // 获取交易对唯一标识
 const getSymbolId = (item: any): string => {
   return `${item.source_id}_${item.target_id}_${item.exchange_id}`;
@@ -835,6 +818,8 @@ const fetchSymbolSetting = async (): Promise<void> => {
   const res = await getSymbolSetting({ symbol_id: selectedSymbolId.value!, source_id: selectedSourceId.value!, exchange_id: selectedExchangeId.value! });
   source_amount.value = res.source_amount;
   source_amount_display.value = res.source_amount_display;
+  source_name.value = res.source_name;
+  symbol_name.value = res.symbol;
   // 更新交易信息
   updateTradeInfo();
 };
@@ -909,7 +894,9 @@ onMounted(async () => {
   });
 
   // 初始化数据
-  await initData();
+  if (getToken()) {
+    await initData();
+  }
   if (getToken()) {
     // 建立连接
     wsService.connect();
@@ -935,20 +922,20 @@ onMounted(async () => {
       if (message.T === 'P') {
         // 处理深度数据
         if (message.A && message.B) {
-          // A是买单列表，需要反转
-          buyOrders.value = [...message.A].reverse().map(item => ({
+          // A是买单列表，按价格从大到小排序
+          buyOrders.value = [...message.A].map(item => ({
             price: item.P,
             amount: item.V,
-          }));
+          })).sort((a, b) => Number(b.price) - Number(a.price));
 
-          // B是卖单列表，需要反转
-          sellOrders.value = [...message.B].reverse().map(item => ({
+          // B是卖单列表，按价格从大到小排序
+          sellOrders.value = [...message.B].map(item => ({
             price: item.P,
             amount: item.V,
-          }));
+          })).sort((a, b) => Number(b.price) - Number(a.price));
 
           if (activeTab.value === 'BUY') {
-            buyOrSellPrice.value = buyOrders.value[buyOrders.value.length - 1].price;
+            buyOrSellPrice.value = buyOrders.value[0].price;
           }
           else if (activeTab.value === 'SELL') {
             buyOrSellPrice.value = sellOrders.value[0].price;
@@ -1151,6 +1138,45 @@ const handleConfirmPassword = async () => {
     uni.hideLoading();
   }
 };
+
+// 处理滑块拖动事件
+const handleSliderTouchStart = (e: TouchEvent) => {
+  // 使用uni-app的方式获取元素位置
+  const touch = e.touches[0];
+  const query = uni.createSelectorQuery();
+  query.select('.custom-slider').boundingClientRect((data: any) => {
+    if (!data) return;
+    const offsetX = touch.clientX - data.left;
+
+    // 直接设置滑块位置
+    const percentage = Math.min(Math.max((offsetX / data.width) * 100, 0), 100);
+    sliderValue.value = percentage;
+    updateTradeInfo();
+  }).exec();
+};
+
+const handleSliderTouchMove = (e: TouchEvent) => {
+  e.preventDefault();
+  const touch = e.touches[0];
+
+  // 使用uni-app的方式获取元素位置
+  const query = uni.createSelectorQuery();
+  query.select('.custom-slider').boundingClientRect((data: any) => {
+    if (!data) return;
+    const offsetX = touch.clientX - data.left;
+
+    // 计算百分比位置 (限制在0-100之间)
+    const percentage = Math.min(Math.max((offsetX / data.width) * 100, 0), 100);
+
+    // 设置滑块值并更新交易信息
+    sliderValue.value = percentage;
+    updateTradeInfo();
+  }).exec();
+};
+
+const handleSliderTouchEnd = () => {
+
+};
 </script>
 
 <style lang="scss" scoped>
@@ -1189,5 +1215,66 @@ const handleConfirmPassword = async () => {
     background-color: #F8F9FA !important; // 添加背景色
     border: none !important; // 移除边框
   }
+}
+
+/* 自定义滑块样式 */
+.custom-slider {
+  position: relative;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  touch-action: none;
+}
+
+.slider-track {
+  position: relative;
+  width: 100%;
+  height: 4rpx;
+  background-color: #FFE4E1;
+  border-radius: 2rpx;
+}
+
+.slider-track-active {
+  position: absolute;
+  height: 100%;
+  left: 0;
+  top: 0;
+  border-radius: 2rpx;
+}
+
+.slider-handle {
+  position: absolute;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background-color: #E53935;
+  transform: translateX(-50%);
+  box-shadow: 0 0 4rpx rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.slider-steps {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.slider-step {
+  position: absolute;
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background-color: #FFE4E1;
+  transform: translateX(-50%);
+  z-index: 5;
+  top: calc(50% - 5rpx);
+  border: 1rpx solid #E0E0E0;
+}
+
+.slider-step.active {
+  background-color: #E53935;
+  border-color: #E53935;
 }
 </style>
