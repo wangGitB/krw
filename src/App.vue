@@ -18,7 +18,6 @@ onHide(() => {
   console.log('App Hide');
 });
 
-// TODO: 后面需要取消注释
 // #ifdef H5
 // 在H5环境下监听路由变化;
 onMounted(() => {

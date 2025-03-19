@@ -16,73 +16,35 @@
   >
     <c-header title="历史订单" :show-back="false" class="relative z-10" />
     <!-- 顶部筛选栏 -->
-    <view class="fixed-filter-bar flex items-center border-b border-gray-100 bg-white p-30rpx">
-      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="togglePriceTypePopup">
-        {{ currentPriceType }}
-        <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
+    <view class="fixed-filter-bar box-border flex items-center justify-between border-b border-gray-100 bg-white p-20rpx">
+      <scroll-view scroll-x class="w-full" :show-scrollbar="false">
+        <view class="flex items-center space-x-20rpx">
+          <view class="min-w-160rpx flex shrink-0 items-center justify-center rounded-lg bg-gray-100 px-20rpx py-10rpx text-26rpx text-gray-800" @click="togglePriceTypePopup">
+            {{ currentPriceType }}
+            <view class="ml-10rpx flex items-center">
+              <u-icon name="arrow-down-fill" size="10rpx" color="#999" />
+            </view>
+          </view>
+          <view class="min-w-160rpx flex shrink-0 items-center justify-center rounded-lg bg-gray-100 px-20rpx py-10rpx text-26rpx text-gray-800" @click="toggleDirectionPopup">
+            {{ currentDirection }}
+            <view class="ml-10rpx flex items-center">
+              <u-icon name="arrow-down-fill" size="10rpx" color="#999" />
+            </view>
+          </view>
+          <view class="min-w-200rpx flex shrink-0 items-center justify-center rounded-lg bg-gray-100 px-20rpx py-10rpx text-26rpx text-gray-800">
+            <view class="flex items-center" @click="showDateRangePicker">
+              {{ currentTime }}
+              <view class="ml-10rpx flex items-center">
+                <u-icon name="arrow-down-fill" size="10rpx" color="#999" />
+              </view>
+            </view>
+            <view v-if="startDate && endDate" class="ml-10rpx flex items-center justify-center rounded-full bg-gray-100" @click="clearDateRange">
+              <view class="i-mdi-delete text-18px text-gray-600" />
+            </view>
+          </view>
         </view>
-      </view>
-      <!-- <view class="mx-20rpx text-gray-300">
-        |
-      </view> -->
-      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="toggleDirectionPopup">
-        {{ currentDirection }}
-        <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
-        </view>
-      </view>
-      <view class="mr-30rpx flex items-center text-28rpx text-gray-800" @click="showDateRangePicker">
-        {{ currentTime }}
-        <view class="ml-20rpx flex items-center">
-          <u-icon name="arrow-down-fill" size="12rpx" color="#999" />
-        </view>
-      </view>
-      <view class="ml-auto">
-        <u-icon name="list" size="24" color="#333" />
-      </view>
+      </scroll-view>
     </view>
-
-    <!-- 为筛选栏添加占位 -->
-    <!-- <view class="h-200rpx" /> -->
-
-    <!-- 价格类型选择弹出层 -->
-    <u-popup
-      :show="showPriceTypePopup"
-      mode="top"
-      :mask="true"
-      :safe-area-inset-top="false"
-      :z-index="20"
-      @close="showPriceTypePopup = false"
-    >
-      <view class="bg-white">
-        <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
-          市价
-        </view>
-        <view class="px-30rpx py-24rpx text-28rpx" @click="selectPriceType('限价')">
-          限价
-        </view>
-      </view>
-    </u-popup>
-
-    <!-- 方向选择弹出层 -->
-    <u-popup
-      :show="showDirectionPopup"
-      mode="top"
-      :mask="true"
-      :safe-area-inset-top="false"
-      :z-index="20"
-      @close="showDirectionPopup = false"
-    >
-      <view class="bg-white">
-        <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
-          买入
-        </view>
-        <view class="px-30rpx py-24rpx text-28rpx" @click="selectDirection('卖出')">
-          卖出
-        </view>
-      </view>
-    </u-popup>
 
     <!-- 订单列表 -->
     <view
@@ -159,11 +121,6 @@
             交易手续费: {{ formatNumber(item.fee) }}
           </text>
         </view>
-        <view class="no-scrollbar w-[35%] overflow-x-auto text-center text-24rpx text-gray-600">
-          <text class="whitespace-nowrap">
-            手续费利润: {{ item.agent_fee ? formatNumber(item.agent_fee) : '0.00' }}
-          </text>
-        </view>
         <view class="w-[30%] text-right">
           <text :class="getStatusClass(item.status)" class="inline-block whitespace-nowrap rounded-md px-16rpx py-4rpx text-24rpx">
             {{ getStatusText(item.status) }}
@@ -192,6 +149,7 @@
     start-text="开始"
     end-text="结束"
     color="#2979ff"
+    :closeable="true"
     :max-date="maxDate"
     :min-date="minDate"
     :default-date="startDate ? startDate : ''"
@@ -200,6 +158,41 @@
     @confirm="confirmDateRange"
     @close="cancelDate"
   />
+  <!-- 价格类型选择弹出层 -->
+  <u-popup
+    :show="showPriceTypePopup"
+    mode="bottom"
+    :mask="true"
+    :safe-area-inset-top="true"
+    @close="showPriceTypePopup = false"
+  >
+    <view class="bg-white">
+      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectPriceType('市价')">
+        市价
+      </view>
+      <view class="px-30rpx py-24rpx text-28rpx" @click="selectPriceType('限价')">
+        限价
+      </view>
+    </view>
+  </u-popup>
+
+  <!-- 方向选择弹出层 -->
+  <u-popup
+    :show="showDirectionPopup"
+    mode="bottom"
+    :mask="true"
+    :safe-area-inset-top="true"
+    @close="showDirectionPopup = false"
+  >
+    <view class="bg-white">
+      <view class="border-b border-gray-100 px-30rpx py-24rpx text-28rpx" @click="selectDirection('买入')">
+        买入
+      </view>
+      <view class="px-30rpx py-24rpx text-28rpx" @click="selectDirection('卖出')">
+        卖出
+      </view>
+    </view>
+  </u-popup>
 </template>
 
 <script setup lang="ts">
@@ -214,8 +207,8 @@ const dataList = ref<OrderItem[]>([]);
 const showPriceTypePopup = ref(false);
 const showDirectionPopup = ref(false);
 const showDatePickerPopup = ref(false);
-const currentPriceType = ref('市价 | 委托');
-const currentDirection = ref('方向');
+const currentPriceType = ref('市价 | 委托方式');
+const currentDirection = ref('买入 | 方向');
 const currentTime = ref('时间');
 const startDate = ref('');
 const endDate = ref('');
@@ -255,7 +248,7 @@ function togglePriceTypePopup() {
 
 // 选择价格类型
 function selectPriceType(type: string) {
-  currentPriceType.value = `${type} | 委托`;
+  currentPriceType.value = `${type} | 委托方式`;
   showPriceTypePopup.value = false;
   queryParams.value.make_type = type === '市价' ? 'MARKET' : 'LIMIT';
   pagingRef.value?.reload();
@@ -271,7 +264,7 @@ function toggleDirectionPopup() {
 
 // 选择方向
 function selectDirection(direction: string) {
-  currentDirection.value = direction;
+  currentDirection.value = `${direction} | 方向`;
   showDirectionPopup.value = false;
   queryParams.value.order_side = direction === '买入' ? 'BUY' : 'SELL';
   pagingRef.value?.reload();
@@ -333,12 +326,17 @@ function formatDateForQuery(date: Date): string {
 // 取消日期选择
 function cancelDate() {
   showDatePickerPopup.value = false;
-  // 如果之前没有选择过日期，清空日期相关参数
-  if (!startDate.value || !endDate.value) {
-    queryParams.value.create_begin = undefined;
-    queryParams.value.create_end = undefined;
-    currentTime.value = '时间';
-  }
+}
+
+// 添加清除日期范围的函数
+function clearDateRange(e: Event) {
+  e.stopPropagation();
+  startDate.value = '';
+  endDate.value = '';
+  queryParams.value.create_begin = undefined;
+  queryParams.value.create_end = undefined;
+  currentTime.value = '时间';
+  pagingRef.value?.reload();
 }
 
 // 修改格式化日期函数，使其返回 yyyy-MM-dd 格式
@@ -442,6 +440,12 @@ function getStatusText(status: OrderStatus) {
   left: 0;
   z-index: 9;
 } */
+
+.fixed-filter-bar {
+  width: 100%;
+  z-index: 9;
+  /* min-height: 100rpx; */
+}
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;

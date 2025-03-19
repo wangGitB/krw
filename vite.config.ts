@@ -31,7 +31,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
     server: {
       port: Number.parseInt(env.VITE_APP_PORT, 10),
       hmr: true,
-      host: true,
+      host: '0.0.0.0',
       open: true,
       proxy: createViteProxy(env),
     },
