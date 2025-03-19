@@ -1,10 +1,10 @@
 <template>
-  <c-header :show-back="false" has-background title="我的" class="relative z-10" />
   <view
     class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
     :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
   />
   <c-container>
+    <c-header :show-back="false" has-background title="我的" class="relative z-10" />
     <view class="page-wrap relative">
       <up-loading-page :loading="loading" />
       <view v-if="!loading">
@@ -74,7 +74,7 @@
                 </view>
                 <view class="font-weight-500 max-w-40 font-size-32rpx">
                   {{ asset.symbol }} <text class="ml-10rpx font-size-24rpx text-gray">
-                    {{ asset.symbol_name || '' }}
+                    <!-- {{ asset.symbol_name || '' }} -->
                   </text>
                 </view>
               </view>
@@ -89,7 +89,7 @@
             </view>
             <view class="mt-10rpx flex justify-between">
               <view class="font-size-24rpx text-gray">
-                {{ asset.price_type || '最新价' }}({{ selectedCurrency }})
+                '最新价'({{ selectedCurrency }})
               </view>
               <view class="mt-5rpx flex justify-between">
                 <view class="font-size-28rpx">
@@ -133,8 +133,8 @@
 </template>
 
 <script setup lang="ts">
-import type { MySymbol, UserAssetData } from '@/api/my';
-import { getCurrency, getCurrencyAmount } from '@/api/my';
+import type { PriceSymbol, UserAssetData } from '@/api/my';
+import { getCurrencyAmount, getPriceSymbol } from '@/api/my';
 import { usePermission } from '@/hooks';
 import background_banner from '@/static/images/home/background_banner.png';
 import { ref } from 'vue';
@@ -197,12 +197,20 @@ const getCurrencyAmountFn = async () => {
 // 获取币种
 const getCurrencyList = async () => {
   try {
-    const res = await getCurrency();
-    currencies.value = res.map((item: MySymbol) => ({
-      code: item.symbol || item.symbol_name,
+    const res = await getPriceSymbol();
+    currencies.value = res.map((item: PriceSymbol) => ({
+      code: item.symbol,
     }));
-    // 默认选中第一个币种
-    selectedCurrency.value = currencies.value[0]?.code || 'USD';
+
+    // 获取本地存储的币种，如果没有则使用第一个币种或USD
+    const savedCurrency = uni.getStorageSync('selectedCurrency');
+    if (savedCurrency && currencies.value.some(c => c.code === savedCurrency)) {
+      selectedCurrency.value = savedCurrency;
+    }
+    else {
+      selectedCurrency.value = currencies.value[0]?.code || 'USD';
+    }
+
     // 获取货币数量
     await getCurrencyAmountFn();
   }
@@ -232,6 +240,9 @@ const chooseCurrency = () => {
 const selectCurrency = (currency: string) => {
   selectedCurrency.value = currency;
   showCurrencyPicker.value = false;
+
+  // 保存选择到本地存储
+  uni.setStorageSync('selectedCurrency', currency);
 
   // 切换货币后重新获取数据
   loading.value = true; // 重新加载数据时显示loading

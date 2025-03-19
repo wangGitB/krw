@@ -99,13 +99,13 @@
         </view>
         <view class="flex flex-1 flex-col items-center">
           <view class="mb-10rpx flex items-center text-36rpx text-gray-800 font-bold">
-            <text class="shrink-0">
+            <text class="max-w-[80rpx] shrink-0 truncate">
               {{ item.deal_amount || '0' }}
             </text>
             <text class="shrink-0">
               /
             </text>
-            <text class="shrink-0">
+            <text class="max-w-[80rpx] shrink-0 truncate">
               {{ item.amount || '0' }}
             </text>
           </view>
@@ -381,6 +381,7 @@ function updateTimeDisplay() {
 async function queryList(pageNo: number, pageSize: number) {
   queryParams.value.current = pageNo;
   queryParams.value.pageSize = pageSize;
+  console.log('xxxx');
 
   try {
     const res = await getOrderList(queryParams.value);
@@ -442,8 +443,9 @@ function getStatusText(status: OrderStatus) {
 } */
 
 .fixed-filter-bar {
-  width: 100%;
   z-index: 9;
+  width: 100%;
+
   /* min-height: 100rpx; */
 }
 

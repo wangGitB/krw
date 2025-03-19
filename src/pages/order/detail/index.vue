@@ -34,8 +34,11 @@
         <text class="text-32rpx font-bold">
           订单详情
         </text>
-        <view class="ml-auto rounded-full bg-green-50 px-16rpx py-4rpx text-24rpx text-green-500">
-          全部完成
+        <view
+          class="ml-auto rounded-full px-16rpx py-4rpx text-24rpx"
+          :class="getStatusClass(orderDetail.status)"
+        >
+          {{ getStatusText(orderDetail.status) }}
         </view>
       </view>
     </view>
@@ -44,7 +47,7 @@
     <view class="bg-white p-30rpx">
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
-          委托价格(USDT)
+          委托价格({{ orderDetail.symbol.split('/')[1] }})
         </text>
         <text class="text-28rpx">
           {{ orderDetail.price }}
@@ -53,16 +56,16 @@
 
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
-          成交均价(USDT)
+          成交均价({{ orderDetail.symbol.split('/')[1] }})
         </text>
         <text class="text-28rpx">
-          {{ orderDetail.avg_price }}
+          {{ orderDetail.avg_price || '0' }}
         </text>
       </view>
 
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
-          委托数量(HSK)
+          委托数量({{ orderDetail.symbol.split('/')[0] }})
         </text>
         <text class="text-28rpx">
           {{ orderDetail.amount || '0' }}
@@ -71,7 +74,7 @@
 
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
-          成交数量(HSK)
+          成交数量({{ orderDetail.symbol.split('/')[0] }})
         </text>
         <text class="text-28rpx">
           {{ orderDetail.deal_amount || '0' }}
@@ -80,7 +83,7 @@
 
       <view class="flex items-center justify-between border-b border-gray-50 py-20rpx">
         <text class="text-28rpx text-gray-600">
-          成交额(USDT)
+          成交额({{ orderDetail.symbol.split('/')[1] }})
         </text>
         <text class="text-28rpx">
           {{ orderDetail.volume || '0' }}
@@ -135,16 +138,16 @@
 
       <view class="flex items-center justify-between py-20rpx">
         <text class="text-28rpx text-gray-600">
-          手续费(HSK)
+          手续费({{ orderDetail.symbol ? orderDetail.symbol.split('/')[0] : 'HSK' }})
         </text>
         <text class="text-28rpx">
-          {{ orderDetail.fee }}
+          {{ orderDetail.fee_symbol || '0' }}
         </text>
       </view>
     </view>
 
     <!-- 成交记录 -->
-    <view class="mt-20rpx bg-white">
+    <view class="my-20rpx bg-white">
       <view class="border-b border-gray-100 p-30rpx">
         <view class="flex items-center">
           <view class="mr-16rpx h-32rpx w-8rpx rounded-4rpx bg-red-500" />
@@ -344,24 +347,28 @@ function copyOrderId() {
 }
 
 // 获取订单状态样式
-function _getStatusClass(status: string) {
+function getStatusClass(status: string) {
   const statusMap: Record<string, string> = {
     MAKE_ORDER: 'bg-blue-50 text-blue-600',
+    ORDER_COMMITED: 'bg-blue-50 text-blue-600',
     ORDER_ALL_CANCELED: 'bg-gray-50 text-gray-600',
+    ORDER_PARTIALLY_CANCELED: 'bg-yellow-50 text-yellow-600',
     ORDER_CANCELING: 'bg-yellow-50 text-yellow-600',
-    ORDER_COMPLETED: 'bg-green-50 text-green-600',
+    ORDER_FINISHED: 'bg-green-50 text-green-600',
     ORDER_FAILED: 'bg-red-50 text-red-600',
   };
   return statusMap[status] || 'bg-gray-50 text-gray-600';
 }
 
 // 获取订单状态文本
-function _getStatusText(status: string) {
+function getStatusText(status: string) {
   const statusMap: Record<string, string> = {
     MAKE_ORDER: '进行中',
+    ORDER_COMMITED: '进行中',
     ORDER_ALL_CANCELED: '已取消',
+    ORDER_PARTIALLY_CANCELED: '部分取消',
     ORDER_CANCELING: '取消中',
-    ORDER_COMPLETED: '已完成',
+    ORDER_FINISHED: '全部完成',
     ORDER_FAILED: '失败',
   };
   return statusMap[status] || status;

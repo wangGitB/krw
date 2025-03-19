@@ -1,6 +1,15 @@
 <template>
   <c-header title="交易密码" class="relative z-10" @back="handleBack" />
-  <c-container class="h-[calc(100vh-190rpx)] bg-white">
+  <up-loading-page :loading="loading" />
+  <!-- <view v-if="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <view class="flex flex-col items-center justify-center">
+      <u-loading-icon size="28" mode="circle" />
+      <text class="ml-10rpx mt-10rpx text-28rpx text-white">
+        加载中...
+      </text>
+    </view>
+  </view> -->
+  <c-container v-if="!loading" class="h-[calc(100vh-190rpx)] bg-white">
     <view class="px-30rpx py-20rpx">
       <view class="mb-24rpx flex items-center justify-between rounded-md bg-#f8f9fa p-24rpx">
         <text class="text-28rpx text-gray-800">
@@ -9,7 +18,7 @@
         <up-switch v-model="isEnabled" size="20" active-color="#5ac725" />
       </view>
       <c-line />
-      <view class="flex items-center justify-between py-30rpx">
+      <view v-if="initialTradeStatus && isEnabled" class="flex items-center justify-between py-30rpx">
         <text class="text-28rpx text-gray-800">
           旧密码
         </text>
@@ -26,39 +35,41 @@
         </view>
       </view>
 
-      <view class="flex items-center justify-between py-30rpx">
-        <text class="text-28rpx text-gray-800">
-          新密码
-        </text>
-        <view class="code-container w-70%" @click="focusInput('new')">
-          <u-code-input
-            v-model="newPassword"
-            :maxlength="6"
-            :size="boxSize"
-            mode="box"
-            hairline
-            :space="10"
-            @change="codeChange"
-          />
+      <template v-if="isEnabled || !initialTradeStatus">
+        <view class="flex items-center justify-between py-30rpx">
+          <text class="text-28rpx text-gray-800">
+            新密码
+          </text>
+          <view class="code-container w-70%" @click="focusInput('new')">
+            <u-code-input
+              v-model="newPassword"
+              :maxlength="6"
+              :size="boxSize"
+              mode="box"
+              hairline
+              :space="10"
+              @change="codeChange"
+            />
+          </view>
         </view>
-      </view>
 
-      <view class="flex items-center justify-between py-30rpx">
-        <text class="text-28rpx text-gray-800">
-          重复新密码
-        </text>
-        <view class="code-container w-70%" @click="focusInput('confirm')">
-          <u-code-input
-            v-model="confirmPassword"
-            :maxlength="6"
-            :size="boxSize"
-            mode="box"
-            hairline
-            :space="10"
-            @change="codeChange"
-          />
+        <view class="flex items-center justify-between py-30rpx">
+          <text class="text-28rpx text-gray-800">
+            重复新密码
+          </text>
+          <view class="code-container w-70%" @click="focusInput('confirm')">
+            <u-code-input
+              v-model="confirmPassword"
+              :maxlength="6"
+              :size="boxSize"
+              mode="box"
+              hairline
+              :space="10"
+              @change="codeChange"
+            />
+          </view>
         </view>
-      </view>
+      </template>
 
       <view class="flex items-center justify-between py-30rpx">
         <text class="text-28rpx text-gray-800">
@@ -85,10 +96,12 @@
 </template>
 
 <script lang="ts" setup>
-import { resetTradePwd } from '@/api/my';
+import { getUserInfo, resetTradePwd } from '@/api/my';
 import { onMounted, ref } from 'vue';
 
-const isEnabled = ref(true);
+const loading = ref(true);
+const isEnabled = ref(false);
+const initialTradeStatus = ref(false);
 const oldPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
@@ -111,6 +124,20 @@ const calculateBoxSize = () => {
 
 onMounted(() => {
   calculateBoxSize();
+  getUserInfo()
+    .then((res) => {
+      isEnabled.value = res.trade_status;
+      initialTradeStatus.value = res.trade_status;
+    })
+    .catch((err) => {
+      uni.showToast({
+        title: err.message || '获取用户信息失败',
+        icon: 'none',
+      });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 });
 
 const handleBack = () => {
@@ -132,45 +159,43 @@ const codeChange = () => {
 
 const handleConfirm = () => {
   // 验证输入
-  if (!isEnabled.value) {
-    // 处理关闭交易密码的逻辑
-    uni.showToast({
-      title: '已关闭交易密码',
-      icon: 'none',
-    });
-    return;
-  }
-
-  if (!oldPassword.value || oldPassword.value.length < 6) {
-    uni.showToast({
-      title: '请输入完整的旧密码',
-      icon: 'none',
-    });
-    return;
-  }
-
-  if (!newPassword.value || newPassword.value.length < 6) {
-    uni.showToast({
-      title: '请输入完整的新密码',
-      icon: 'none',
-    });
-    return;
-  }
-
-  if (newPassword.value !== confirmPassword.value) {
-    uni.showToast({
-      title: '两次输入的密码不一致',
-      icon: 'none',
-    });
-    return;
-  }
-
   if (!verificationCode.value || verificationCode.value.length < 6) {
     uni.showToast({
       title: '请输入完整的验证码',
       icon: 'none',
     });
     return;
+  }
+
+  // 如果是开启状态或初始状态为false
+  if (isEnabled.value || !initialTradeStatus.value) {
+    // 如果初始状态为true且当前为开启状态，需要验证旧密码
+    if (initialTradeStatus.value && isEnabled.value) {
+      if (!oldPassword.value || oldPassword.value.length < 6) {
+        uni.showToast({
+          title: '请输入完整的旧密码',
+          icon: 'none',
+        });
+        return;
+      }
+    }
+
+    // 验证新密码
+    if (!newPassword.value || newPassword.value.length < 6) {
+      uni.showToast({
+        title: '请输入完整的新密码',
+        icon: 'none',
+      });
+      return;
+    }
+
+    if (newPassword.value !== confirmPassword.value) {
+      uni.showToast({
+        title: '两次输入的密码不一致',
+        icon: 'none',
+      });
+      return;
+    }
   }
 
   // 提交表单
@@ -215,5 +240,10 @@ const handleConfirm = () => {
     background-color: #F8F9FA !important; // 添加背景色
     border: none !important; // 移除边框
   }
+}
+
+.u-loading-icon {
+  display: inline-block;
+  vertical-align: middle;
 }
 </style>

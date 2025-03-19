@@ -1,13 +1,13 @@
 <template>
   <view>
     <view
-      class="box-border h-[88rpx] w-full flex items-center border-b border-gray-200 bg-white p-2"
+      class="relative box-border h-[88rpx] w-full flex items-center border-b border-gray-200 bg-white p-2"
       :class="{ '!bg-transparent': hasBackground }"
     >
-      <view v-if="showBack" class="ml-[20rpx] h-full flex items-center" @click="handleBack">
+      <view v-if="showBack" class="absolute left-[20rpx] h-full flex items-center" @click="handleBack">
         <image :src="backIcon" class="h-[48rpx] w-[48rpx] rotate-180" />
       </view>
-      <view class="flex flex-1 justify-center">
+      <view class="w-full flex justify-center">
         <text class="text-center text-[36rpx] text-[#333333] font-bold">
           {{ title }}
         </text>

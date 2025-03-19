@@ -14,7 +14,6 @@ export interface MySymbol {
   symbol_id: number;
   symbol_name: string;
   withdraw_fee: string;
-  [property: string]: any;
 }
 
 // 获取币种
@@ -22,7 +21,6 @@ export const getCurrency = () => get<MySymbol>('/symbol/mine');
 
 export interface Request {
   symbol: string;
-  [property: string]: any;
 }
 
 /**
@@ -36,7 +34,6 @@ export interface Response {
    * 计价用的币种
    */
   symbol: string;
-  [property: string]: any;
 }
 
 /**
@@ -70,7 +67,6 @@ export interface UserAssetItem {
    * 币种
    */
   symbol: string;
-  [property: string]: any;
 }
 
 // 获取当前选择币种的货币数量以及对应币种数据
@@ -124,3 +120,17 @@ export interface ModifyPasswordReq {
  * 修改密码
  */
 export const modifyPassword = (data: ModifyPasswordReq) => post('/user/reset_pwd', { data });
+
+export const getPriceSymbol = () => get<PriceSymbol[]>('/price/symbol');
+
+export interface PriceSymbol {
+  symbol: string;
+}
+
+export const getUserInfo = () => get<UserInfoRes>('/user/info');
+
+export interface UserInfoRes {
+  trade_status: boolean;
+  trade_fee: string;
+  withdraw_fee: string;
+}
