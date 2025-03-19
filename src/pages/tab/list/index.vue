@@ -414,7 +414,7 @@ function getStatusClass(status: OrderStatus) {
     [OrderStatus.ORDER_ALL_CANCELED]: 'bg-gray-50 text-gray-600',
     [OrderStatus.ORDER_PARTIALLY_CANCELED]: 'bg-orange-50 text-orange-600',
     [OrderStatus.ORDER_FINISHED]: 'bg-green-50 text-green-600',
-    [OrderStatus.ORDER_COMMITTED]: 'bg-green-50 text-green-600',
+    [OrderStatus.ORDER_COMMITE]: 'bg-green-50 text-blue-600',
   };
   return statusMap[status] || 'bg-gray-50 text-gray-600';
 }
@@ -428,7 +428,7 @@ function getStatusText(status: OrderStatus) {
     [OrderStatus.ORDER_ALL_CANCELED]: '全部取消',
     [OrderStatus.ORDER_PARTIALLY_CANCELED]: '部分取消',
     [OrderStatus.ORDER_FINISHED]: '全部成交',
-    [OrderStatus.ORDER_COMMITTED]: '已挂单',
+    [OrderStatus.ORDER_COMMITE]: '已挂单',
   };
   return statusMap[status] || status;
 }
