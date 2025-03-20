@@ -966,16 +966,18 @@ onMounted(async () => {
       if (message.T === 'O') {
         console.log('订单更新消息:', message);
         // 查找并更新订单列表中对应的订单
-        const orderIndex = orderList.value.findIndex(item => item.id === message.ID);
-        if (orderIndex !== -1) {
-          // 更新订单状态和成交数量
-          orderList.value[orderIndex].status = message.S;
-          orderList.value[orderIndex].deal_amount = message.D;
+        if (orderList.value && orderList.value.length > 0) {
+          const orderIndex = orderList.value.findIndex(item => item.id === message.ID);
+          if (orderIndex !== -1) {
+            // 更新订单状态和成交数量
+            orderList.value[orderIndex].status = message.S;
+            orderList.value[orderIndex].deal_amount = message.D;
 
           // 如果订单状态变为已完成或已取消，可以刷新订单列表
           // if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
           //   fetchOrderList();
           // }
+          }
         }
       }
     });
