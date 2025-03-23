@@ -85,11 +85,11 @@ class WebSocketService {
       };
 
       this.ws.onmessage = (event: MessageEvent) => {
-        console.log('收到消息:', event.data);
+        // console.log('收到消息:', event.data);
         try {
           // 处理心跳响应
           if (event.data === 'pong') {
-            this.log('收到心跳响应');
+            // this.log('收到心跳响应');
             this.lastHeartbeatResponse = Date.now();
             this.heartbeatRetries = 0;
             if (this.pingTimeout) {
@@ -99,7 +99,7 @@ class WebSocketService {
           }
           else {
             const data = JSON.parse(event.data);
-            this.log('收到消息:', data);
+            // this.log('收到消息:', data);
             if (this.onMessageCallback) {
               this.onMessageCallback(data);
             }

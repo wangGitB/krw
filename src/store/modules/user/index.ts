@@ -50,6 +50,7 @@ const useUserStore = defineStore('user', {
       await UserApi.logout();
       this.resetInfo();
       clearToken();
+      localStorage.clear()
     },
     // 小程序授权登录
     authLogin(provider: providerType = 'weixin') {

@@ -48,7 +48,14 @@ export function request<T = any>(config: HttpRequestConfig): Promise<T> {
         resolve(res.data as unknown as T);
       }
     }).catch((err: any) => {
-      console.error('[ err ] >', err);
+      // console.error('[ err ] >', err,err.code);
+      if (String(err.code) === '20001') {
+        uni.navigateTo({
+          url: '/pages/common/login/index', // 目标页面的路径
+        });
+
+        localStorage.clear();
+      }
       reject(err);
     });
   });

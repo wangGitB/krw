@@ -1,9 +1,7 @@
 <template>
   <view>
-    <view
-      class="relative box-border h-[88rpx] w-full flex items-center border-b border-gray-200 bg-white p-2"
-      :class="{ '!bg-transparent': hasBackground }"
-    >
+    <view class="relative box-border h-[88rpx] w-full flex items-center border-b border-gray-200 bg-white p-2"
+      :class="{ '!bg-transparent': hasBackground }">
       <view v-if="showBack" class="absolute left-[20rpx] h-full flex items-center" @click="handleBack">
         <image :src="backIcon" class="h-[48rpx] w-[48rpx] rotate-180" />
       </view>

@@ -10,6 +10,6 @@
 .line {
   width: 100%;
   margin: 0;
-  border-bottom: 1px solid rgb(214 215 217);
+  border-bottom: 2px solid #f8f9fa;
 }
 </style>

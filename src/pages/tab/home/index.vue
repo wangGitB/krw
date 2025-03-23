@@ -1,17 +1,15 @@
 <template>
   <!-- 添加loading页面 -->
-  <u-loading-page :loading="isLoading" icon-size="36" loading-text="加载中..." loading-mode="semicircle" bg-color="rgba(255, 255, 255, 0.9)" />
+  <u-loading-page :loading="isLoading" icon-size="36" loading-text="加载中..." loading-mode="semicircle"
+    bg-color="rgba(255, 255, 255, 0.9)" />
   <c-container bg-white>
     <c-header :show-back="false" has-background title="行情" class="relative z-50" />
-    <view
-      class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
-      :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }"
-    />
+    <view class="absolute left-0 right-0 top-0 h-[300rpx] w-full"
+      :style="{ backgroundImage: `url(${background_banner})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }" />
     <!-- 币种选择器 -->
     <view class="mb-[20rpx] mt-[24rpx] p-l-[28rpx] p-r-[18rpx]">
       <view
-        class="relative h-[108rpx] flex items-center justify-between overflow-hidden rounded-[10rpx] p-x-[20rpx] shadow-md"
-      >
+        class="relative h-[108rpx] flex items-center justify-between overflow-hidden rounded-[10rpx] p-x-[20rpx] shadow-md">
         <!-- 背景渐变层 -->
         <view class="absolute inset-0 z-0" style="background: linear-gradient(to right, #FFF5EC, #FFF3E9)" />
 
@@ -29,12 +27,10 @@
     <view class="relative z-10">
       <view class="flex items-center justify-between overflow-hidden bg-white py-[28rpx] p-l-[28rpx] p-r-[18rpx]">
         <view class="w-full flex items-center rounded-md bg-#F8F9FA p-x-[28rpx] p-y-[18rpx]">
-          <view
-            v-for="(item, index) in home_icon_list" :key="index"
-            class="relative w-full flex items-center gap-[14rpx] text-[32rpx] text-[#333]"
-          >
+          <view v-for="(item, index) in home_icon_list" :key="index"
+            class="relative w-full flex items-center gap-[14rpx] text-[32rpx] text-[#333]">
             <img class="mr-[14rpx] h-[48rpx] w-[48rpx]" :src="item.icon" alt="" srcset="">
-            <text>{{ item.text }}</text>
+            <text class="top-info-box">{{ item.text }}</text>
           </view>
         </view>
       </view>
@@ -43,40 +39,32 @@
     <!-- 买入和卖出 Button -->
     <view class="relative z-10 flex items-start justify-between bg-white py-[30rpx]">
       <!-- 左侧内容 -->
-      <view class="w-[424rpx] flex flex-col px-[28rpx]">
+      <view class="w-[424rpx] flex flex-col left-content">
         <!-- 买入卖出按钮 -->
         <view class="mb-[24rpx] flex">
-          <u-button
-            class="flex-1" :color="activeTab === 'BUY' ? '#E53935' : '#FFE4E1'" text="买入"
+          <u-button class="flex-1" :color="activeTab === 'BUY' ? '#E53935' : '#FFE4E1'" text="买入"
             :custom-style="{ borderRadius: '8rpx 0 0 8rpx', width: '212rpx', height: '64rpx', color: activeTab === 'BUY' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
-            @click="handleBuy"
-          />
-          <u-button
-            class="flex-1" :color="activeTab === 'SELL' ? '#4CAF50' : '#FFE4E1'" text="卖出"
+            @click="handleBuy" />
+          <u-button class="flex-1" :color="activeTab === 'SELL' ? '#4CAF50' : '#FFE4E1'" text="卖出"
             :custom-style="{ borderRadius: '0 8rpx 8rpx 0', width: '212rpx', height: '64rpx', color: activeTab === 'SELL' ? '#fff' : '#E6302F', fontSize: '30rpx' }"
-            @click="handleSell"
-          />
+            @click="handleSell" />
         </view>
 
         <!-- 限单价 -->
         <view
           class="box-border w-[424rpx] flex items-center justify-between gap-[14rpx] rounded-sm bg-[#f8f9fa] p-[28rpx]"
-          @click="showMakeTypePopup = true"
-        >
+          @click="showMakeTypePopup = true">
           <view class="relative flex items-center gap-[14rpx]">
             <image :src="home_icon4" class="h-[48rpx] w-[48rpx]" @tap.stop="toggleTooltip" />
             <!-- 添加 tooltip -->
-            <view
-              v-if="showTooltip"
+            <view v-if="showTooltip"
               class="absolute bottom-[60rpx] left-0 z-10 w-[300rpx] rounded-[8rpx] bg-[#2C2C2C] p-[20rpx] shadow-lg transition-all duration-300 ease-in-out"
-              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop
-            >
+              :class="[showTooltip ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-[10rpx]']" @tap.stop>
               <text class="text-[24rpx] text-[#E6E6E6]">
                 {{ makeType === 'LIMIT' ? '限价委托是指以特定或更优价格进行买卖，限价单不能保证执行。' : '市价委托是指以当前市场最优价格立即成交的委托方式。' }}
               </text>
               <view
-                class="absolute bottom-[-8rpx] left-[20rpx] h-0 w-0 border-l-[8rpx] border-r-[8rpx] border-t-[8rpx] border-l-transparent border-r-transparent border-t-[#2C2C2C]"
-              />
+                class="absolute bottom-[-8rpx] left-[20rpx] h-0 w-0 border-l-[8rpx] border-r-[8rpx] border-t-[8rpx] border-l-transparent border-r-transparent border-t-[#2C2C2C]" />
             </view>
             <text class="text-[32rpx] text-[#333] font-bold">
               {{ makeType === 'LIMIT' ? '限单价' : '市价' }}
@@ -86,153 +74,130 @@
         </view>
 
         <!-- 买入价格 -->
-        <view v-if="makeType === 'LIMIT'" class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
+        <view v-if="makeType === 'LIMIT'"
+          class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+          <text class="text-[28rpx] text-[#999999] trade-price">
             {{ activeTab === 'BUY' ? '买入价格' : '卖出价格' }}({{ source_name || 'USDT' }})
           </text>
-          <input
-            v-model="buyOrSellPrice"
-            type="digit"
-            class="text-right text-[32rpx] text-[#333333] font-bold"
-            placeholder="请输入价格"
-            @input="handlePriceInput"
-          >
+          <input v-model="buyOrSellPrice" type="digit" class="text-right text-[32rpx] text-[#333333] font-bold"
+            placeholder="请输入价格" @input="handlePriceInput">
         </view>
 
         <!-- 数量 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="min-w-[100rpx] text-[24rpx] text-[#999999]">
+          <text class="min-w-[100rpx] text-[28rpx] text-[#999999]">
             数量
           </text>
-          <input
-            v-model="tradeAmount"
-            type="digit"
-            class="text-right text-[32rpx] text-[#333333] font-bold"
-            placeholder="请输入数量"
-            @input="handleAmountInput"
-          >
+          <input v-model="tradeAmount" type="digit" class="text-right text-[32rpx] text-[#333333] font-bold"
+            placeholder="请输入数量" @input="handleAmountInput">
           <text class="ml-[8rpx] text-[32rpx] text-[#333333] font-bold">
             {{ symbol_name }}
           </text>
         </view>
 
         <!-- 添加滑动条 -->
-        <view class="relative mt-[24rpx] box-border rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <view
-            class="custom-slider"
-            @touchstart="handleSliderTouchStart"
-            @touchmove="handleSliderTouchMove"
-            @touchend="handleSliderTouchEnd"
-          >
+        <view class="slider-box">
+          <view class="custom-slider" @touchstart="handleSliderTouchStart" @touchmove="handleSliderTouchMove"
+            @touchend="handleSliderTouchEnd">
             <view class="slider-track">
-              <view
-                class="slider-track-active"
-                :style="{
-                  width: `${sliderValue}%`,
-                  backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
-                }"
-              />
-            </view>
-            <view
-              class="slider-steps"
-            >
-              <view
-                v-for="(point, index) in [0, 25, 50, 75, 100]"
-                :key="index"
-                class="slider-step"
-                :class="{ active: sliderValue >= point }"
-                :style="{ left: `${point}%` }"
-              />
-            </view>
-            <view
-              class="slider-handle"
-              :style="{
-                left: `${sliderValue}%`,
+              <view class="slider-track-active" :style="{
+                width: `${sliderValue}%`,
                 backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
-              }"
-            />
+              }" />
+            </view>
+            <view class="slider-steps">
+              <view v-for="(point, index) in [25, 50, 75]" :key="index" class="slider-step" :class="{
+                active: activeTab === 'BUY' && sliderValue >= point,
+                active1: activeTab === 'SELL' && sliderValue >= point
+              }" :style="{ left: `${point}%` }" />
+            </view>
+            <view class="slider-handle" :style="{
+              left: `${sliderValue}%`,
+              backgroundColor: activeTab === 'BUY' ? '#E53935' : '#4CAF50',
+            }" />
           </view>
         </view>
 
         <!-- 交易额显示 -->
-        <view v-if="makeType === 'LIMIT'" class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
+        <view v-if="makeType === 'LIMIT'"
+          class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
+          <text class="text-[28rpx] text-[#999999]" style="display: flex; width: 100%;">
             交易额({{ source_name || 'USDT' }})
           </text>
-          <input
-            v-model="totalAmount"
-            type="digit"
-            disabled
-            class="text-right text-[32rpx] text-[#333333] font-bold"
-            :placeholder="`0.00 ${source_name || 'USDT'}`"
-          >
+          <input v-model="totalAmount" type="digit" disabled class="text-right text-[32rpx] text-[#333333] font-bold"
+            :placeholder="`0.00 ${source_name || 'USDT'}`">
         </view>
 
         <!-- 可用余额 -->
         <view class="mt-[24rpx] box-border flex items-center justify-between rounded-sm bg-[#f8f9fa] p-[28rpx]">
-          <text class="text-[24rpx] text-[#999999]">
-            可用: {{ source_amount_display }}
+          <text class="text-[28rpx] text-[#999999]">
+            可用 {{ source_amount_display }}
           </text>
+          <view class="source-box">
+            <text>{{ symbol_name }}</text>
+          </view>
         </view>
 
         <!-- 买入按钮 -->
         <view class="mt-[40rpx]">
-          <u-button
-            :text="activeTab === 'BUY' ? `买入 ${symbol_name}` : `卖出 ${symbol_name}`" :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
+          <u-button :text="activeTab === 'BUY' ? `买入 ${symbol_name}` : `卖出 ${symbol_name}`"
+            :color="activeTab === 'BUY' ? '#E53935' : '#4CAF50'"
             :custom-style="{ width: '100%', height: '88rpx', borderRadius: '8rpx', fontSize: '32rpx' }"
-            @click="handleOrder"
-          />
+            @click="handleOrder" />
         </view>
       </view>
 
       <!-- 右侧报价列表 -->
-      <view class="h-[904rpx] flex flex-1 flex-col p-l-[10rpx] p-r-[20rpx]">
+      <view class="h-[904rpx] flex flex-1 flex-col p-l-[18rpx] p-r-[20rpx] right-tick-box">
         <!-- 标题栏 -->
-        <view class="h-[64rpx] flex items-center justify-between px-[12rpx] text-[24rpx] text-[#999]">
-          <text>价格<br> ({{ source_name || 'USDT' }})</text>
-          <text>数量 <br>({{ symbol_name || 'IP' }})</text>
+        <view class="h-[36rpx] flex flex-start justify-between header-title">
+          <text class="content">
+            <span>价格</span>
+            <span>({{ source_name || 'USDT' }})</span>
+          </text>
+          <text class="content">
+            <span>数量</span>
+            <span>({{ symbol_name || 'IP' }})</span>
+          </text>
         </view>
 
         <!-- 卖单列表 -->
-        <view class="mt-[24rpx]">
-          <view
-            v-for="(item, index) in sellOrders" :key="index"
-            class="relative mb-[12rpx] h-[46rpx] flex cursor-pointer items-center justify-between px-[12rpx]"
+        <view>
+          <view v-for="(item, index) in sellOrders" :key="index"
+            class="relative   flex cursor-pointer items-center justify-between "
             :class="{ 'selected-price': selectedPrice === item.price, 'disabled-price': makeType === 'MARKET' }"
-            @click="makeType === 'LIMIT' && handlePriceSelect(item.price)"
-          >
+            style="height: 40rpx; margin-top: 20rpx;" @click="makeType === 'LIMIT' && handlePriceSelect(item.price)">
             <!-- 内容保持在最上层 -->
-            <text class="relative z-1 text-[24rpx] text-[#E53935]">
+            <text class="right-tick-pice price-color-up">
               {{ item.price }}
             </text>
-            <text class="relative z-1 text-[24rpx] text-[#333]">
+            <text class="right-tick-amount">
               {{ item.amount }}
             </text>
           </view>
         </view>
 
         <!-- 当前价格 -->
-        <view class="my-[24rpx] flex items-center justify-between bg-[#F8F8F8] px-[12rpx] py-[28rpx]">
+        <view class="my-[20rpx] flex items-center justify-between " style="height: 200rpx;">
           <view>
-            <text class="text-[28rpx] font-bold transition-colors duration-100">
+            <span class="currentPrice-box"
+              :class="{ 'price-color-up': currentPrice > oldCurrentPrice, 'price-color-down': currentPrice <= oldCurrentPrice }">
               {{ currentPrice }}
-            </text>
+            </span>
           </view>
         </view>
 
         <!-- 买单列表 -->
         <view class="mb-[24rpx]">
-          <view
-            v-for="(item, index) in buyOrders" :key="index"
-            class="relative mb-[12rpx] h-[56rpx] flex cursor-pointer items-center justify-between px-[12rpx]"
+          <view v-for="(item, index) in buyOrders" :key="index"
+            class="relative  flex cursor-pointer items-center justify-between"
             :class="{ 'selected-price': selectedPrice === item.price, 'disabled-price': makeType === 'MARKET' }"
-            @click="makeType === 'LIMIT' && handlePriceSelect(item.price)"
-          >
+            style="height: 40rpx; margin-top: 20rpx;" @click="makeType === 'LIMIT' && handlePriceSelect(item.price)">
             <!-- 内容保持在最上层 -->
-            <text class="relative z-1 text-[24rpx] text-[#00B069]">
+            <text class="right-tick-pice  price-color-down">
               {{ item.price }}
             </text>
-            <text class="relative z-1 text-[24rpx] text-[#333]">
+            <text class="right-tick-amount">
               {{ item.amount }}
             </text>
           </view>
@@ -242,7 +207,8 @@
     <!-- 委托 -->
 
     <view class="relative z-10 bg-white p-x-[28rpx] p-b-[28rpx]">
-      <view v-for="(item, index) in orderList" :key="index" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx first:mt-0">
+      <view v-for="(item, index) in orderList" :key="index" class="mt-[24rpx] rounded-sm bg-#f8f9fa p-28rpx first:mt-0"
+        style="border-radius: 20rpx;">
         <view>
           <view class="flex items-center justify-between">
             <view class="flex items-center gap-[12rpx]">
@@ -302,17 +268,13 @@
               已成交({{ symbol_name }})
             </view>
           </view>
-          <view
-            v-if="item.status === 'ORDER_COMMITED'"
+          <view v-if="item.status === 'ORDER_COMMITED'"
             class="rounded-[8rpx] bg-[#FAE4E6] p-x-[68rpx] p-y-[16rpx] text-[#E6302F] font-bold"
-            @click="cancelOrder(item.id)"
-          >
+            @click="cancelOrder(item.id)">
             撤销
           </view>
-          <view
-            v-else-if="['INIT', 'MAKE_ORDER', 'ORDER_CANCELING'].includes(item.status)"
-            class="rounded-[8rpx] bg-[#EFEFEF] p-x-[68rpx] p-y-[16rpx] text-[#999999] font-bold"
-          >
+          <view v-else-if="['INIT', 'MAKE_ORDER', 'ORDER_CANCELING'].includes(item.status)"
+            class="rounded-[8rpx] bg-[#EFEFEF] p-x-[68rpx] p-y-[16rpx] text-[#999999] font-bold">
             处理中
           </view>
         </view>
@@ -324,10 +286,8 @@
     </view>
 
     <!-- 币种选择弹出层 -->
-    <u-popup
-      :show="showSymbolPicker" mode="bottom" :mask="true" :safe-area-inset-bottom="true"
-      @close="showSymbolPicker = false"
-    >
+    <u-popup :show="showSymbolPicker" mode="bottom" :mask="true" :safe-area-inset-bottom="true"
+      @close="showSymbolPicker = false">
       <view class="bg-white p-[30rpx]">
         <view class="flex items-center justify-between border-b border-gray-100 pb-[20rpx]">
           <text class="text-[32rpx] font-bold">
@@ -336,10 +296,8 @@
           <u-icon name="close" size="32" @click="showSymbolPicker = false" />
         </view>
         <scroll-view scroll-y style="max-height: 600rpx;">
-          <view
-            v-for="(item, index) in symbolList" :key="index"
-            class="flex items-center justify-between border-b border-gray-100 py-[24rpx]" @click="selectSymbol(item)"
-          >
+          <view v-for="(item, index) in symbolList" :key="index"
+            class="flex items-center justify-between border-b border-gray-100 py-[24rpx]" @click="selectSymbol(item)">
             <view class="flex items-center">
               <text class="text-[28rpx]">
                 {{ item.target_name }}/{{ item.source_name }}
@@ -348,10 +306,8 @@
                 {{ item.exchange_name }}
               </text>
             </view>
-            <u-icon
-              v-if="selectedUniqueSymbolId === getSymbolId(item)" name="checkmark-circle" color="#07c160"
-              size="32"
-            />
+            <u-icon v-if="selectedUniqueSymbolId === getSymbolId(item)" name="checkmark-circle" color="#07c160"
+              size="32" />
           </view>
           <view v-if="symbolList.length === 0" class="py-[40rpx] text-center text-gray-500">
             暂无可用交易对
@@ -361,10 +317,8 @@
     </u-popup>
 
     <!-- 委托类型选择弹出层 -->
-    <u-popup
-      :show="showMakeTypePopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" :round="10"
-      @close="showMakeTypePopup = false"
-    >
+    <u-popup :show="showMakeTypePopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" :round="10"
+      @close="showMakeTypePopup = false">
       <view class="bg-white p-[30rpx]">
         <view class="flex items-center justify-between border-b border-gray-100 pb-[20rpx]">
           <text class="text-[32rpx] font-bold">
@@ -373,10 +327,8 @@
           <u-icon name="close" size="32" @click="showMakeTypePopup = false" />
         </view>
         <view class="py-[20rpx]">
-          <view
-            class="flex items-center justify-between border-b border-gray-100 py-[24rpx]"
-            @click="selectMakeType('LIMIT')"
-          >
+          <view class="flex items-center justify-between border-b border-gray-100 py-[24rpx]"
+            @click="selectMakeType('LIMIT')">
             <view class="flex items-center">
               <text class="text-[28rpx]">
                 限价委托
@@ -403,10 +355,8 @@
     </u-popup>
 
     <!-- 下单确认弹出层 -->
-    <u-popup
-      :show="showOrderConfirm" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
-      @close="showOrderConfirm = false"
-    >
+    <u-popup :show="showOrderConfirm" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
+      @close="showOrderConfirm = false">
       <view class="flex items-center justify-between border-b border-[#f5f5f5] p-[28rpx]">
         <view class="flex-1" /> <!-- 左侧空白占位 -->
         <view class="flex-1 text-center">
@@ -423,10 +373,8 @@
           <text class="text-[28rpx] text-[#333]">
             {{ selectedSymbol }}
           </text>
-          <view
-            class="ml-22rpx rounded-sm p-x-[8rpx] text-[24rpx]"
-            :style="{ color: activeTab === 'BUY' ? '#E6302F' : '#00B069', border: activeTab === 'BUY' ? '1rpx solid #E6302F' : '1rpx solid #00B069' }"
-          >
+          <view class="ml-22rpx rounded-sm p-x-[8rpx] text-[24rpx]"
+            :style="{ color: activeTab === 'BUY' ? '#E6302F' : '#00B069', border: activeTab === 'BUY' ? '1rpx solid #E6302F' : '1rpx solid #00B069' }">
             {{ activeTab === 'BUY' ? '买入' : '卖出' }}
           </view>
         </view>
@@ -448,7 +396,7 @@
         </view>
         <view class="mb-[20rpx] flex items-center justify-between">
           <text class="text-[28rpx] text-[#999]">
-            买入量
+            {{ activeTab === 'BUY' ? '买入量' : '卖出量' }}
           </text>
           <text class="text-[28rpx] text-[#333]">
             {{ tradeAmount }} {{ symbol_name }}
@@ -464,20 +412,16 @@
         </view>
       </view>
       <view class="h-[90rpx] p-x-[28rpx] p-y-[20rpx]">
-        <view
-          class="h-full flex items-center justify-center rounded-full text-[30rpx] text-white"
-          :style="{ background: activeTab === 'BUY' ? '#E6302F' : '#00B069' }" @click="submitOrder"
-        >
+        <view class="h-full flex items-center justify-center rounded-full text-[30rpx] text-white"
+          :style="{ background: activeTab === 'BUY' ? '#E6302F' : '#00B069' }" @click="submitOrder">
           确认
         </view>
       </view>
     </u-popup>
 
     <!-- 修改密码输入弹窗，使用 u-code-input 组件 -->
-    <u-popup
-      :show="showPasswordPopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
-      @close="showPasswordPopup = false"
-    >
+    <u-popup :show="showPasswordPopup" mode="bottom" :mask="true" :safe-area-inset-bottom="true" round="20"
+      @close="showPasswordPopup = false">
       <view class="p-[28rpx]">
         <view class="flex items-center justify-between border-b border-[#f5f5f5] p-b-[20rpx]">
           <view class="flex-1" />
@@ -493,17 +437,13 @@
 
         <view class="code-container mt-[40rpx] w-full flex justify-center">
           <!-- 使用 u-code-input 组件 -->
-          <u-code-input
-            v-model="tradePassword" :maxlength="6" :dot="false" mode="box" :space="10" font-size="24px"
-            class="verification-code-input mb-[20rpx] w-full" :size="boxSize"
-          />
+          <u-code-input v-model="tradePassword" :maxlength="6" :dot="false" mode="box" :space="10" font-size="24px"
+            class="verification-code-input mb-[20rpx] w-full" :size="boxSize" />
         </view>
 
         <view class="mt-[40rpx]">
-          <view
-            class="h-[88rpx] flex items-center justify-center rounded-[8rpx] bg-[#E6302F] text-[32rpx] text-white"
-            @click="handleConfirmPassword"
-          >
+          <view class="h-[88rpx] flex items-center justify-center rounded-[8rpx] bg-[#E6302F] text-[32rpx] text-white"
+            @click="handleConfirmPassword">
             确认
           </view>
         </view>
@@ -535,6 +475,7 @@ const isLoading = ref(true);
 const pagingRef = ref<InstanceType<typeof zPaging> | null>(null);
 // 添加当前价格的响应式引用
 const currentPrice = ref(0);
+const oldCurrentPrice = ref(0);
 // 源币数量和名称
 const source_amount = ref('');
 const source_amount_display = ref('');
@@ -915,6 +856,8 @@ onMounted(async () => {
 
     // 监听消息
     wsService.onMessage((message) => {
+      // console.log(message);
+
       // 处理价格行情数据
       if (message.T === 'B') {
         // 更新行情数据 - BP(买入价格)、TP(卖出价格)、TM(24小时最高价)
@@ -973,10 +916,10 @@ onMounted(async () => {
             orderList.value[orderIndex].status = message.S;
             orderList.value[orderIndex].deal_amount = message.D;
 
-          // 如果订单状态变为已完成或已取消，可以刷新订单列表
-          // if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
-          //   fetchOrderList();
-          // }
+            // 如果订单状态变为已完成或已取消，可以刷新订单列表
+            // if (['ORDER_FINISHED', 'ORDER_ALL_CANCELED', 'ORDER_PARTIALLY_CANCELED'].includes(message.S)) {
+            //   fetchOrderList();
+            // }
           }
         }
       }
@@ -993,7 +936,12 @@ onMounted(async () => {
     pagingRef.value?.reload();
   });
 });
-
+// 侦听最新价
+watch(() => currentPrice.value, (_, oldCurrentPrice1) => {
+  if (oldCurrentPrice1) {
+    oldCurrentPrice.value = oldCurrentPrice1;
+  }
+})
 // 在组件卸载前取消订阅并关闭WebSocket
 onBeforeUnmount(() => {
   wsService.unsubscribe();
@@ -1173,7 +1121,7 @@ const handleConfirmPassword = async () => {
   }
   catch (error: any) {
     uni.showToast({
-      title: error.message || '下单失败',
+      title: error.msg || '下单失败',
       icon: 'none',
     });
   }
@@ -1334,6 +1282,20 @@ const handleAmountInput = (e: any) => {
   }
 }
 
+.trade-price {
+  white-space: nowrap;
+}
+
+.source-box {
+  display: flex;
+
+  text {
+    font-size: 28rpx;
+    font-weight: bold;
+  }
+
+}
+
 /* 自定义滑块样式 */
 .custom-slider {
   position: relative;
@@ -1343,12 +1305,17 @@ const handleAmountInput = (e: any) => {
   touch-action: none;
 }
 
+.slider-box {
+  padding: 0 10rpx;
+  margin-top: 20rpx;
+}
+
 .slider-track {
   position: relative;
   width: 100%;
-  height: 4rpx;
+  height: 10rpx;
   background-color: #FFE4E1;
-  border-radius: 2rpx;
+  border-radius: 5rpx;
 }
 
 .slider-track-active {
@@ -1361,9 +1328,9 @@ const handleAmountInput = (e: any) => {
 
 .slider-handle {
   position: absolute;
-  z-index: 10;
-  width: 28rpx;
-  height: 28rpx;
+  z-index: 11;
+  width: 23.5rpx;
+  height: 23.5rpx;
   background-color: #E53935;
   border-radius: 50%;
   box-shadow: 0 0 4rpx rgb(0 0 0 / 20%);
@@ -1380,10 +1347,10 @@ const handleAmountInput = (e: any) => {
 
 .slider-step {
   position: absolute;
-  top: calc(50% - 5rpx);
-  z-index: 5;
-  width: 10rpx;
-  height: 10rpx;
+  top: calc(50% - 11rpx);
+  z-index: 10;
+  width: 20rpx;
+  height: 20rpx;
   background-color: #FFE4E1;
   border: 1rpx solid #E0E0E0;
   border-radius: 50%;
@@ -1395,9 +1362,66 @@ const handleAmountInput = (e: any) => {
   border-color: #E53935;
 }
 
+.slider-step.active1 {
+  background-color: #40AE36;
+  border-color: #40AE36;
+}
+
 /* 添加选中价格的背景样式 */
 .selected-price {
   background-color: rgb(229 57 53 / 10%);
   border-radius: 4rpx;
+}
+
+.top-info-box {
+  font-family: PingFang SC-Bold;
+  font-weight: Bold;
+  font-size: 14pt;
+}
+
+.left-content {
+  padding-left: 28rpx;
+}
+
+.right-tick-box {
+  .header-title {
+    display: flex;
+    align-items: flex-start;
+
+    .content {
+      display: flex;
+      align-items: center;
+      font-family: PingFang SC-Medium;
+      font-size: 24rpx;
+      font-weight: Medium;
+      white-space: nowrap;
+    }
+  }
+}
+
+.right-tick-pice {
+  font-family: PingFang SC-Bold;
+  font-weight: bold;
+  font-size: 28rpx;
+}
+
+.right-tick-amount {
+  font-family: PingFang SC-Bold;
+  font-weight: Medium;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.currentPrice-box {
+  font-weight: Bold;
+  font-size: 40rpx;
+}
+
+.price-color-down {
+  color: #40AE36;
+}
+
+.price-color-up {
+  color: #F81A19;
 }
 </style>
